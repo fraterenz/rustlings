@@ -17,6 +17,7 @@ Alternatively, for a first-time Rust learner, there are several other resources:
 ## Anotated exercices
 
 - primitive types ex3
+- REDO enums ex
 
 ## Getting Started
 
