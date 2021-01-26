@@ -44,10 +44,10 @@ Rust is a statically typed language. The compiler can usually infer what type we
  
 **Expressions** evaluate to a resulting value. if is an expression. The block that we use to create new scopes, `{}`, e.g.: 
 ```
-    let y = {
-        let x = 3;
-        x + 1  // do not use ';' else if won't return anything, it will become a statement instead of an expression?
-    };
+let y = {
+	let x = 3;
+	x + 1  // do not use ';' else if won't return anything, it will become a statement instead of an expression?
+};
 ```
 so `y` wil be equal to `4`, != python.
 
@@ -87,9 +87,9 @@ When data is on the heap, the value `s1` bound to the data is only a pointer! Ru
 
 With data on the heap (that is that do not have the `Copy` trait) you have two options:
 
-	1. **moving:** taking the ownership. Rust copies the pointer (shallow copy) + invalidates the 1st pointer BUT NOT THE DATA POINTED! see rustling/scratch/moving1.rs
+1. **moving:** taking the ownership. Rust copies the pointer (shallow copy) + invalidates the 1st pointer BUT NOT THE DATA POINTED! see rustling/scratch/moving1.rs
 
-	2. **borrowing:** not taking the ownership. Pointer which cannot modify the obeject unless the pointer has been defined as mut (like `&mut`)
+2. **borrowing:** not taking the ownership. Pointer which cannot modify the obeject unless the pointer has been defined as mut (like `&mut`)
 
 ## Book
 
@@ -144,8 +144,8 @@ Values tied to the underlying data but with no owernship: eg string slice
 
 The rules of references are (so called **borrowing rules**):
 
-    1. At any given time, you can have either one mutable reference or any number of immutable references.
-    2. References must always be valid: no dangling, no data race.
+1. At any given time, you can have either one mutable reference or any number of immutable references.
+2. References must always be valid: no dangling, no data race.
 
 `s.clear()` needs and gets a mutable reference: borrowing!
 
