@@ -72,24 +72,23 @@ The `::` syntax in the `::new` line indicates that new is an associated function
 # 4 Memory management
 
 ## Summary
-string s;
-- reading (&s): just need to read the data (borrowing),
-- mutating (&mut s): read to write the data (borrowing mutable, only 1 owner at the time),
-- consuming (s): the variable wont be needed later on (moving)
+With data on the heap (that is that do not have the `Copy` trait) you have two options, both involves creating a new pointer:
 
-Ownership rules:
-value is a name bound to an object,
+1. **moving:** the new created pointer takes the ownership. Rust copies the pointer (shallow copy) + invalidates the 1st pointer BUT NOT THE DATA POINTED! If you try to use the invalidated pointer, you'll get the value borrowed after move, see [Figure4-2](https://doc.rust-lang.org/stable/book/ch04-01-what-is-ownership.html) and see rustling/scratch/moving1.rs
+
+2. **borrowing:** the new created pointer does not takes the ownership. It cannot modify the object (aka cannot borrow as mutable) unless the pointer has been defined as mut (like `&mut` or without any reference as in `rustling/move_semantics3.rs`). See [Figure4-5](https://doc.rust-lang.org/stable/book/ch04-02-references-and-borrowing.html)
+
+So, with a string s, depending on what you want to do, you can: 
+1. reading (&s): just need to read the data (borrowing)
+2. mutating (&mut s): read to write the data (borrowing mutable, only 1 owner at the time)
+3. consuming (s): the variable wont be needed later on (moving)
+
+**Ownership rules:** value is a name bound to an object,
 1. Each value in Rust has a variable that’s called its owner.
 2. There can only be one owner at a time for each value.
 3. When the owner goes out of scope, the value will be dropped.
 
 When data is on the heap, the value `s1` bound to the data is only a pointer! Rust will never automatically create “deep” copies of your data. Therefore, any automatic copying can be assumed to be inexpensive in terms of runtime performance. To create deep copies `clone` trait.
-
-With data on the heap (that is that do not have the `Copy` trait) you have two options:
-
-1. **moving:** taking the ownership. Rust copies the pointer (shallow copy) + invalidates the 1st pointer BUT NOT THE DATA POINTED! see rustling/scratch/moving1.rs
-
-2. **borrowing:** not taking the ownership. Pointer which cannot modify the obeject unless the pointer has been defined as mut (like `&mut`)
 
 ## Book
 
