@@ -4,3 +4,5 @@ When they say:
 
 - to get a read-only view into the string, you can use the `as_bytes` method. To convert it into an owned vector, you can use `into_bytes`.
 - `into_` functions do destructive conversions into owned types, `as_` functions do non-destructive conversions into views.
+
+have a look at [this video](https://www.youtube.com/watch?v=79phqVpE7cU&list=PLxLxbi4e2mYHj_5jpkigBn-qVLofCYnNn)
