@@ -199,9 +199,9 @@ A crate is file with some code; can be a binary (src/main.rs) or a library (src/
 
 # Chap 15: smart pointers
 
-Smart pointers are similar to C++ smart pointers: they are stored on the stack but they point to data on the heap and they own the data. Smart pointers are implemented with Struct with the `Deref` and `Drop` traits:
+Smart pointers are similar to C++ smart pointers: they are stored on the stack but they point to data on the heap and they own the data (on the contrary references do not own the data!). Smart pointers are implemented with Struct with the `Deref` and `Drop` traits:
 
-- Deref: used to write code that works with either references or smart pointers, e.g. `assert_eq!([2, 3, 4], nice_slice)` where `nice_slice` is a slice, that is a reference on a vec: `&a[1..4]`, where `a` is a vec. See ` rustlings/exercises/primitive_types/primitive_types4.rs`. `deref` is like in C++: the operator `*` which is the inver operation of the ref operator `&`. To enable dereferencing with the `*` operator, we implement the `Deref` trait, which is used to implement pointers then.
+- Deref: used to write code that works with either references or smart pointers, e.g. `assert_eq!([2, 3, 4], nice_slice)` where `nice_slice` is a slice, that is a reference on a vec: `&a[1..4]`, where `a` is a vec. See ` rustlings/exercises/primitive_types/primitive_types4.rs` [here](https://github.com/fraterenz/rustlings/blob/exercices/exercises/primitive_types/primitive_types4.rs). `deref` is like in C++: the operator `*` which is the inver operation of the ref operator `&`. To enable dereferencing with the `*` operator, we implement the `Deref` trait, which is used to implement pointers then.
 
 - Drop: destructor
 
