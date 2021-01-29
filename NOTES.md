@@ -85,7 +85,8 @@ Objects' memory is freed whenever the scope of the variable of the object is out
 ```
 let v: Vec<i32> = Vec::new(); 
 let v1 = v;//v1 is the new owner 
-``` != 
+```  
+is different compared to:
 ```
 let v: Vec<i32> = Vec::new();
 let v1 = &v;//v1 has borrowed from v

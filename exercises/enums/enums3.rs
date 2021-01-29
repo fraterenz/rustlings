@@ -3,9 +3,9 @@
 
 
 enum Message {
-    Echo(String),
+    Echo(String),  // Echo is a Message taking a String
     Quit,
-    ChangeColor((u8, u8, u8)),
+    ChangeColor((u8, u8, u8)),  
     Move(Point),
 }
 
