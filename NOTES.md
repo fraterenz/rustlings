@@ -164,7 +164,9 @@ The if let syntax lets you combine if and let into a less verbose way to handle 
 
 # Chap 7: organization
 
-A crate is file with some code; can be a binary (src/main.rs) or a library (src/lib.rs). Each crate has a crate root: src/main.rs is the crate root of a binary crate with the same name as the package; similary, src/lib.rs is the crate root of a library crate with the same names as the package. Cargo passes the crate root files to rustc to build the library or binary. A package can have multiple binary crates by placing files in the src/bin directory.
+A crate is file with some code; can be a binary (`src/main.rs`) or a library (`src/lib.rs`). The functions within a library are used by the binaries usually.
+
+Each crate has a crate root and `src/main.rs` is the crate root of a binary crate with the same name as the package; similary, `src/lib.rs` is the crate root of a library crate with the same names as the package. Cargo passes the crate root files to rustc to build the library or binary. A package can have multiple binary crates by placing files in the src/bin directory.
 
 # Extra what I've learnt
 
