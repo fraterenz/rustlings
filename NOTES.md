@@ -86,13 +86,14 @@ Objects' memory is freed whenever the scope of the variable of the object is out
 let v: Vec<i32> = Vec::new(); 
 let v1 = v;//v1 is the new owner 
 ```  
-is different compared to:
+is different from:
 ```
 let v: Vec<i32> = Vec::new();
 let v1 = &v;//v1 has borrowed from v
 v.len();//fine
 v1.len();//also fine
-```. That is you can only have 1 owner and the ownership of one object can be moved to another obect; in borrowing, multiple object can ref the same object. But:
+```
+That is you can only have 1 owner and the ownership of one object can be moved to another obect; in borrowing, multiple object can ref the same object. But:
 1. a borrower cannot access the resource after the owner has destroyed it, avoid **use-after-free bug** :)
 2. **mutable borrowing:** by default borrowing is immutable, to specify mutability you need `mut` everywhere: in the init of object you're borrowing, in the signature function and in the call -> although there can be multiple shared references, there can only be one mutable reference at one time, avoid **dangling pointers**
 3. The scope in which the variable s is valid is the same as any function parameter’s scope, but we don’t drop what the reference points to when it goes out of scope because we don’t have ownership. When functions have references as parameters instead of the actual values, we won’t need to return 
