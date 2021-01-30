@@ -1,4 +1,6 @@
 # Memory management
+Managing memoring at compile time is the key point of rust.
+
 With data on the heap (that is that do not have the `Copy` trait) you have three options, two of them involve (borrowing) creating a new pointer:
 
 1. **moving:** the new created pointer takes the ownership. Rust copies the pointer (shallow copy) + invalidates the 1st pointer BUT NOT THE DATA POINTED! If you try to use the invalidated pointer, you'll get the value borrowed after move, see [Figure4-2](https://doc.rust-lang.org/stable/book/ch04-01-what-is-ownership.html) and see rustling/scratch/moving1.rs
@@ -14,14 +16,65 @@ So, with a string s, depending on what you want to do, you can:
 2. mutating (&mut s): read to write the data (borrowing mutable, only 1 owner at the time)
 3. consuming (s): the variable wont be needed later on (moving)
 
-**Ownership rules:** value is a name bound to an object,
+**Ownership rules (moving):** value is a name bound to an object,
 1. Each value in Rust has a variable that’s called its owner.
 2. There can only be one owner at a time for each value.
 3. When the owner goes out of scope, the value will be dropped.
-4. Can't have a mutable and an immutable ref (borrowing) at the same time
+
+**Borrowing rules (references):**
+1. Can't have a mutable and an immutable ref (borrowing) at the same time
+2. Max 1 mut reference or several immutable refs
 
 When data is on the heap, the value `s1` bound to the data is only a pointer! Rust will never automatically create “deep” copies of your data. Therefore, any automatic copying can be assumed to be inexpensive in terms of runtime performance. To create deep copies `clone` trait.
 
+
+## Examples
+### Messing with ownership (moves)
+
+Immutable variable moved to `mut` variable: this particular example is not allowed because `val` has been moved to `var` and the data associated to it has been dropped?:
+
+```
+let val = Vec::<u32>::new();
+let mut var = val; // create a mutable object
+var.push(5);
+println!("{:?}!", var);
+// if we remove this line here, all fine since
+// val has completed this immutable job and has
+// been dropped
+println!("{:?}!", val);  //  error!
+```
+note that if you remove the last line, the code will work eventhough `val` is immutable and `var` is `mut`. See [issue](https://github.com/rust-lang/rustlings/issues/631#issuecomment-770170180). Indeed, we think about `let val = Vec::new()` has a pointer pointing to a immutable allocated memory; the next line just create another pointer, `mut` this time, with the same memory adress of `val`. All fine only if `val` is not used after the initiation of `var` pointer.
+
+### Messing with references
+1. Mut references and `mut` variables: this is allowed since `var` is a reference, dropped since not used anymore (but the data associated to it is not dropped since no owernship), and `val` is valid again:
+```
+let mut val = Vec::<u32>::new();
+let var = &mut val; 
+var.push(5);
+println!("{:?}!", var);  // drop mut ref var, revalidates val?
+println!("{:?}!", val);
+```
+2. Immutable references and `mut` variables: this is fine since the references will never access bad data (see [video also](https://youtu.be/lQ7XF-6HYGc?t=1582)):
+```
+let mut val = Vec::<u32>::new();
+val.push(1);
+let val1 = &val;
+let val2 = &val;
+println!("{} {} {}", val, val1, val2);
+val.push(12);
+// this would result in an error because val1 ref
+// is an immutable ref so at first it pointed to 
+// a vector [1] but now it points to a vec [1, 12]
+// which is not possible, since it is immutable.
+// If you remove this line here, no error because 
+// the job of val1 was completed with val = [1],
+// eventhough the objected has changed later on, val1
+// is not used anymore and it's dropped.
+println!("{:?}, val1);
+```
+3. Mut references and immutable variables: error.
+
+4. Immutable references and immutable variables: fine.
 
 # Data modelling
 
