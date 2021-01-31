@@ -63,6 +63,27 @@ Rust will not automatically try to convert non-Boolean types to a Boolean, != py
 
 The `::` syntax in the `::new` line indicates that new is an associated function of the String type. An associated function is implemented on a type, in this case String, rather than on a particular instance of a String.
 
+## Functions support argument destructuring
+
+Usefull when you would like to rename parameters in your function, see [here](https://www.possiblerust.com/guide/how-to-read-rust-functions-part-1):
+
+```
+struct Something {
+    field_1: i32,
+    field_2: f64,
+}
+
+// The `field_1: x` and `field_2: y` parts are assigning
+// the values of `field_1` to `x` and `field_2` to `y`.
+// cool when you want to rename things
+fn func(Something { field_1: x, field_2: y }: Something) {
+    println!("x: {}, y: {}", x, y);
+}
+```
+
+instead of passing the structure directly.
+
+
 ## 3.5 Looping
 
 3 loops available: `loop`, `for` and `while`.
@@ -168,22 +189,93 @@ A crate is file with some code; can be a binary (`src/main.rs`) or a library (`s
 
 Each crate has a crate root and `src/main.rs` is the crate root of a binary crate with the same name as the package; similary, `src/lib.rs` is the crate root of a library crate with the same names as the package. Cargo passes the crate root files to rustc to build the library or binary. A package can have multiple binary crates by placing files in the src/bin directory.
 
+The children modules have access to the parent modules' functions, but the opposite is not true. Rust makes everything private by default. When you have a `struct` that have some private fields, you need to create a public constructor.
+
+[Rust's module paths are not tied directly to the filesystem](https://dev.to/stevepryde/intro-to-rust-modules-3g8k)! When you do `mod cat` in your main, rust will look for either `cat.rs` at the same level of your `main.rs` or for `cat/mod.rs` so a `cat` directory. Remember that everything is private by default in rust.
+
+When you import into some files others than `main.rs` or `lib.rs` you need to add `crate::mymode::myf`, that is the keyword `crate`.
+
 # Extra what I've learnt
 
 - Try to do it general: `first_world(&str) -> &str` works with string litteral as well as with String: see [here](https://doc.rust-lang.org/book/ch04-03-slices.html#string-slices-as-parameters)
 
 - When parameters in a function are related but separated, that is not good! area(width, height) not good since the 2 parameters are related (we want to compute the area of a rectangle, not of an height with width), from [here](https://doc.rust-lang.org/book/ch05-02-example-structs.html)
 
+# Chap8: collections
 
-# Chap 15: smart pointers
+## Vectors
 
-Smart pointers are similar to C++ smart pointers: they are stored on the stack but they point to data on the heap and they own the data (on the contrary references do not own the data!). Smart pointers are implemented with Struct with the `Deref` and `Drop` traits:
+Vector is a collection containing smart pointers [with some metadata](https://doc.rust-lang.org/nomicon/vec-layout.html). There are 2 ways to access a vector, depending if you want to make the program panicking `&v[i]` or you want silence when the data does not exit `v.get(i)`, where `i = v.len()`.
 
-- Deref: used to write code that works with either references or smart pointers, e.g. `assert_eq!([2, 3, 4], nice_slice)` where `nice_slice` is a slice, that is a reference on a vec: `&a[1..4]`, where `a` is a vec. See ` rustlings/exercises/primitive_types/primitive_types4.rs` [here](https://github.com/fraterenz/rustlings/blob/exercices/exercises/primitive_types/primitive_types4.rs). `deref` is like in C++: the operator `*` which is the inver operation of the ref operator `&`. To enable dereferencing with the `*` operator, we implement the `Deref` trait, which is used to implement pointers then.
+Vector can handle only data of the same type. To solve this, use enums with vectors, so vectors can store the data according to the enum just defined.
 
-- Drop: destructor
+```
+enum SpreadsheetCell {
+	Int(i32),
+	Float(f64),
+	Text(String),
+}
 
-**recursive types:**
+let row = vec![
+	SpreadsheetCell::Int(3),
+	SpreadsheetCell::Text(String::from("blue")),
+	SpreadsheetCell::Float(10.12),
+	SpreadsheetCell::Float(1.2),
+	SpreadsheetCell::Int(4),
+];
+```
+
+## Strings
+
+Are also collections containing smart pointers and metadata, `String` is a wrapper over a `Vec<u8>`. The operator `+` does not take the owernship of its parameter: `let s3 = s1 + &s2; // note s1 has been moved here and can no longer be used but s2 is fine`. When using the macro `format!` same owernships rules as `+`: `format!("{}-{}-{}", s1, s2, s3);` consumes `s1`. 
+
+Strings do not support indexing! The reason for this is that the number of bytes 
+
+String can be interpreted by rust as bytes, scalr values or grapheme clusters (letters). Almost always go for bytes: `mystr.bytes()` but you can use also `chars()` if you want a human to read the string in char.
+
+## Hash Maps
+
+`HashMap<K, V>`, takes a tuple as argument and they own their data (consume). Hash maps are homogeneous: all of the keys must have the same type, and all of the values must have the same type. To init a Hash Map:
+
+```
+let teams = vec![String::from("Blue"), String::from("Yellow")];
+let initial_scores = vec![10, 50];
+
+let mut scores: HashMap<_, _> =
+	teams.into_iter().zip(initial_scores.into_iter()).collect();
+```
+To retrieve the value use `get` which takes as param a reference `&V` and returns a `Option<&V>`. 
+
+The `get` in python is achieved using `entry` API which returns a enum `Entry` which can have two possible values: an enum called `OccupiedEntry` or `VacantEntry` see [here](https://doc.rust-lang.org/std/collections/hash_map/enum.Entry.html). Then we can call `.or_insert(30)` on this `Entry` in order to either retrieve a mutable ref on the original value or on the new allocated value `30`. REMEMBER to deref if you want to use it, since it is a reference:
+
+```
+for word in text.split_whitespace() {
+	let count = map.entry(word).or_insert(0);
+	*count += 1; // deref since or_insert returns a mut ref
+}
+```
+
+# Chap15: Smart pointers
+
+Smart pointers in C++ will free the memory automatically. `Vec` and `String` are examples of smart pointers in rust, which are basically structs implementing the `Deref` and `Drop` traits:
+
+- Deref: `deref` is like in C++: the operator `*` which is the inverse operation of the ref operator `&`. Used to write code that works with either references or smart pointers, e.g. `assert_eq!([2, 3, 4], nice_slice)` where `nice_slice` is a slice, that is a reference on a vec: `&a[1..4]`, where `a` is a vec. See ` rustlings/exercises/primitive_types/primitive_types4.rs` [here](https://github.com/fraterenz/rustlings/blob/exercices/exercises/primitive_types/primitive_types4.rs). 
+
+- Drop: destructor, used to free the memory
+
+They are stored on the stack but they point to data on the heap and they own the data, contratly to references do not own the data!. By the way, this is exactly as in C++, since the references need to point to a variable (cannot be null). 
+
+## Boxes
+`Box<T>` are stored on the stack, but the data pointed is on the heap. In C++ analogy, `let b = Box::new(3)` will correspond to the call `shared_ptr<int> p(new int(3))` which allocates some memory (on rust on the stack) for `p` knowing that it will point to some int; then, at runtime, create a int variable (on rust at compile time?? I think at runtime, on the heap) with value of 3 and stores its adress into `p`. Once deleted `p` the memory is deallocated of both `p` (and `p` is set to `nullptr`) and the `int` variable with value of 3.
+
+Used to create recursive types, that are types representing objects that have no fixed size at compile time: the compiler will know that we need to store the pointer to something on the heap. It is like `String` that is a struct that will point to some data on the heap because it is not known at compile time: user can insert whaterver he wants at runtime. 
+
+See this example: 
+```
+let x = 5;
+let y = Box::new(x);
+```
+here the value pointed by `y` is another `int` (no `x`) that has the same value of `x`, that is `5`. Watch out for moves when `x` is stored on the heap, because in that case you invalidate the variable `x`, since it has been moved to `y`.
 
 # Memento
 
@@ -195,5 +287,5 @@ unsafe means that you can write a program that is not well-defined: meaning that
 
 # TODO
 
-continue the book and continue rustlings: exercises/primitive_types/primitive_types4.rs hint to understand why the test does not take a ref as input but a normal array (should be cap 15 smart pointers, in part 15.2) !
+continue the book and continue rustlings: `exercises/primitive_types/primitive_types4.rs` hint to understand why the test does not take a ref as input but a normal array (should be cap 15 smart pointers, in part 15.2) !
 
