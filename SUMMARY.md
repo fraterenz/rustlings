@@ -1,6 +1,13 @@
+# Learning rust
+Read the book and at the same time do rustlings, have a look at [half-hour to rust](https://fasterthanli.me/articles/a-half-hour-to-learn-rust), do exercism rust track, the [crust of rust](https://www.youtube.com/playlist?list=PLqbS7AVVErFiWDOAVrPt7aYmnuuOLYvOa) and have a look at the following crates:
+
+1. [ndarray](https://github.com/rust-ndarray/ndarray)
+2. [autograd](https://github.com/raskr/rust-autograd)
+3. dbug
+
 The language takes advantages of the behaviours embedded into the variables' types: choose the type of your variable based on the tasks these variables need to perform. Similar to [C++ operator overloading](https://youtu.be/DnT-LUQgc7s?t=774).
 
-# Algebric types and pattern matching
+# Algebraic types and pattern matching
 
 ```
 if let Some(f) = my_vec.find(|t| t >= 42) {
@@ -9,7 +16,15 @@ if let Some(f) = my_vec.find(|t| t >= 42) {
 ```
 means if `find` finds the `t_i` it returns `Some(t_i)` and then assign `t_i` to `f`.
 
-In a match block, the compiler ensures that you have exhausted and thought about all the possibilities that could match. Else, error (you can use `_` to match all the things you havent listed).
+Another example, from [here](https://fasterthanli.me/articles/a-half-hour-to-learn-rust):
+
+```
+if let Number { odd: true, value } = n {
+	println!("Odd number: {}", value);
+}
+```
+
+In a match block, the compiler ensures that you have exhausted and thought about all the possibilities that could match. Else, error (you can use `_` to match all the things you haven't listed).
 
 # Functions
 
@@ -22,13 +37,13 @@ There are [3 possible ways to create bindings](https://www.possiblerust.com/guid
 `Copy` is a trait indicating a type is “trivially copyable,” meaning it can be copied with only a call to `memcpy`, so all the data contained in the structure is contiguous; there are no pointers to chase. `Copy` tells us that copying a piece of data is fast.
 
 # Memory management
-Managing memoring at compile time (pointers checks) is the key point of rust. When that is not possibile (e.g. user input non defined at compile time but at runtime), rust stored data on the heap (e.g. `Vec`, `Box` or `String`). I think that most of the things that are stored on the heap binds to the variable using smart pointers, more specifically `unique_ptr` in C++, see [here](https://youtu.be/CaZP-1ETL-o?t=377). 
+Managing memory at compile time (pointers checks) is the key point of rust. When that is not possible (e.g. user input non defined at compile time but at runtime), rust stored data on the heap (e.g. `Vec`, `Box` or `String`). I think that most of the things that are stored on the heap binds to the variable using smart pointers, more specifically `unique_ptr` in C++, see [here](https://youtu.be/CaZP-1ETL-o?t=377). 
 
 The rules are there to [avoid the following errors](https://youtu.be/DnT-LUQgc7s?t=1211):
 
-1. only one owner: the owner is responsabile to free the memory allocated to an object. SO NO DOUBLE FREES! (moving)
+1. only one owner: the owner is responsible to free the memory allocated to an object. SO NO DOUBLE FREES! (moving)
 2. no pointers outlive the owner: if the owner was dropped/moved, cannot be reference to it. SO NO USE AFTER FREE / dangling pointers (borrow checker)
-3. safely give immutable reference to some code you dont know, and they cannot modify it
+3. safely give immutable reference to some code you don't know, and they cannot modify it
 4. only 1 writer or multiple readers. NO DATA RACES
 
 With data on the heap (that is that do not have the `Copy` trait) you have three options, two of them involve (borrowing) creating a new pointer:
@@ -37,7 +52,7 @@ With data on the heap (that is that do not have the `Copy` trait) you have three
 
 2. **borrowing:** the new created pointer does not takes the ownership. It cannot modify the object (aka cannot borrow as mutable), more than one pointers of this type can exist.
 
-3. **borrowing mutably:** there can be only one pointer accessing the data in the same scope (but there can be two pointers sequentially), see [video Gary](https://youtu.be/79phqVpE7cU?t=50). Only one mutable pointer at the same time. You can achieve this by either creating a mutatble ref `&mut` or in the prototype of a function, as in `rustling/move_semantics3.rs`. See [Figure4-5](https://doc.rust-lang.org/stable/book/ch04-02-references-and-borrowing.html). Note that you can have a immutable object borrowed as `mut`, as long as the variable immutable is not used later on in the code, see [here](https://github.com/rust-lang/rustlings/issues/631).
+3. **borrowing mutably:** there can be only one pointer accessing the data in the same scope (but there can be two pointers sequentially), see [video Gary](https://youtu.be/79phqVpE7cU?t=50). Only one mutable pointer at the same time. You can achieve this by either creating a mutable ref `&mut` or in the prototype of a function, as in `rustling/move_semantics3.rs`. See [Figure4-5](https://doc.rust-lang.org/stable/book/ch04-02-references-and-borrowing.html). Note that you can have a immutable object borrowed as `mut`, as long as the variable immutable is not used later on in the code, see [here](https://github.com/rust-lang/rustlings/issues/631).
 
 Scope means `{}` but also the last time a binding is mentioned (again as in [Gary's video](https://youtu.be/79phqVpE7cU?t=506)).
 
@@ -47,7 +62,7 @@ So, with a string s, depending on what you want to do, you can:
 3. consuming (s): the variable wont be needed later on (moving)
 
 **Ownership rules (moving):** value is a name bound to an object,
-1. Each value in Rust has a variable that’s called its owner.
+1. Each value in Rust has a variable that is called its owner.
 2. There can only be one owner at a time for each value.
 3. When the owner goes out of scope, the value will be dropped.
 
@@ -73,7 +88,7 @@ println!("{:?}!", var);
 // been dropped
 println!("{:?}!", val);  //  error!
 ```
-note that if you remove the last line, the code will work eventhough `val` is immutable and `var` is `mut`. See [issue](https://github.com/rust-lang/rustlings/issues/631#issuecomment-770170180). Indeed, we think about `let val = Vec::new()` has a pointer pointing to a immutable allocated memory; the next line just create another pointer, `mut` this time, with the same memory adress of `val`. All fine only if `val` is not used after the initiation of `var` pointer.
+note that if you remove the last line, the code will work even though `val` is immutable and `var` is `mut`. See [issue](https://github.com/rust-lang/rustlings/issues/631#issuecomment-770170180). Indeed, we think about `let val = Vec::new()` has a pointer pointing to a immutable allocated memory; the next line just create another pointer, `mut` this time, with the same memory address of `val`. All fine only if `val` is not used after the initiation of `var` pointer.
 
 ### Messing with references
 Note that these observations are valid also when using data on the stack:
@@ -112,7 +127,25 @@ val.push(12);
 
 Great flexibility in rust module system since rust's module paths are not tied directly to the filesystem: hierarchically split code in logical units (modules), and manage visibility (public/private) between them.
 
+# To panic! or not to panic!
+When you `panic!` no way to recover, stop the program. On the other hand, using `Result` will allow the calling function to decide whether to recover or to `panic!`, such as:
 
+```
+        let guess: i32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
+
+```
+or similarly,
+
+```
+        let guess: i32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_) => panic!("Error"),
+        };
+
+```
 # Modern language
 The compiler knowns about:
 
