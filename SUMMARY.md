@@ -1,3 +1,7 @@
+The language takes advantages of the behaviours embedded into the variables' types: choose the type of your variable based on the tasks these variables need to perform. Similar to [C++ operator overloading](https://youtu.be/DnT-LUQgc7s?t=774). For instance, the null pointer example encapsulated into a `Option` enum, see [here](#no-hidden-states).
+
+Rust provides memory safety when resources matter (speed and cpu usage in the system programming field) that is low-level language, memory safe with zero cost abstraction.
+
 # Learning rust
 Read the book and at the same time do rustlings, have a look at [half-hour to rust](https://fasterthanli.me/articles/a-half-hour-to-learn-rust), do exercism rust track, the [crust of rust](https://www.youtube.com/playlist?list=PLqbS7AVVErFiWDOAVrPt7aYmnuuOLYvOa) and have a look at the following crates:
 
@@ -10,14 +14,9 @@ Read the book and at the same time do rustlings, have a look at [half-hour to ru
 - [Jon Gjengset](https://www.youtube.com/watch?v=DnT-LUQgc7s)
 - [Niko Matsakis](https://www.youtube.com/watch?v=jQOZX0xkrWA)
 
-The language takes advantages of the behaviours embedded into the variables' types: choose the type of your variable based on the tasks these variables need to perform. Similar to [C++ operator overloading](https://youtu.be/DnT-LUQgc7s?t=774). For instance, the null pointer example encapsulated into a `Option` enum, see [here](#no-hidden-states). Remember that `Option` is a enum (similar to a type) and `Some` and `None` are the values that a variable `Option` can take, so the data is `Some` or `None` but the type is `Option`.
-
-# Goals of rust: Niko Matsakis
-
-- Provide memory safety when resources matter (speed and cpu usage?), that is zero cost abstraction e.g. generics and functional
-
 # Algebraic types and pattern matching
 
+Remember that `Option` is a enum (similar to a type) and `Some` and `None` are the values that a variable `Option` can take, so the data is `Some` or `None` but the type is `Option`.
 ```
 if let Some(f) = my_vec.find(|t| t >= 42) {
         // found or None; brackets because if?
@@ -44,6 +43,7 @@ There are [3 possible ways to create bindings](https://www.possiblerust.com/guid
 3. by-mutable-reference
 
 `Copy` is a trait indicating a type is “trivially copyable,” meaning it can be copied with only a call to `memcpy`, so all the data contained in the structure is contiguous; there are no pointers to chase. `Copy` tells us that copying a piece of data is fast.
+
 
 # Memory management
 Managing memory at compile time (pointers checks) is the key point of rust. When that is not possible (e.g. user input non defined at compile time but at runtime), rust stored data on the heap (e.g. `Vec`, `Box` or `String`). I think that most of the things that are stored on the heap binds to the variable using smart pointers, more specifically `unique_ptr` in C++, see [here](https://youtu.be/CaZP-1ETL-o?t=377). 
@@ -80,7 +80,6 @@ So, with a string s, depending on what you want to do, you can:
 2. Max 1 mut reference or several immutable refs
 
 When data is on the heap, the value `s1` bound to the data is only a pointer! Rust will never automatically create “deep” copies of your data. Therefore, any automatic copying can be assumed to be inexpensive in terms of runtime performance. To create deep copies `clone` trait.
-
 
 ## Examples
 ### Messing with ownership (moves)
@@ -142,7 +141,7 @@ With errors you can either panic or not. In order to panic you can:
 1. `.unwrap()` a `Result`
 2. `.expect("my message")` a `Result` you can add a message
 3. `match` with `Err(e) => panic!(e)`
-.4 use the `?` operator after a `Result`
+4. use the `?` operator after a `Result`
 
 To not panic you can:
 
