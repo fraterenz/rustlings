@@ -1,12 +1,12 @@
 // option2.rs
 // Make me compile! Execute `rustlings hint option2` for hints
 
-// I AM NOT DONE
-
 fn main() {
     let optional_value = Some(String::from("rustlings"));
-    // TODO: Make this an if let statement whose value is "Some" type
-    value = optional_value {
+    // destructure pattern, optional_value is Some(String) so using
+    // let Some(value) the String inside optional_value will be moved
+    // into value. This way you are doing a try catch without panicking
+    if let Some(value) = optional_value {
         println!("the value of optional value is: {}", value);
     } else {
         println!("The optional value doesn't contain anything!");
@@ -17,9 +17,13 @@ fn main() {
         optional_values_vec.push(Some(x));
     }
 
-    // TODO: make this a while let statement - remember that vector.pop also adds another layer of Option<T>
-    // You can stack `Option<T>`'s into while let and if let
-    value = optional_values_vec.pop() {
+    // while you can destructure, pop elements. See here for while let 
+    // with Options:
+    // https://doc.rust-lang.org/rust-by-example/flow_control/while_let.html
+    // Two Some(Some)) are needed since pop returns an Option and the elements
+    // of optional_values_vec are Option too:
+    // https://doc.rust-lang.org/std/vec/struct.Vec.html#method.pop
+    while let Some(Some(value)) = optional_values_vec.pop() {
         println!("current value: {}", value);
     }
 }

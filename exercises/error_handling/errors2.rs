@@ -6,25 +6,27 @@
 // Since the player typed in the quantity, though, we get it as a string-- and
 // they might have typed anything, not just numbers!
 
-// Right now, this function isn't handling the error case at all (and isn't
-// handling the success case properly either). What we want to do is:
+// right now, this function isn't handling the error case at all (and isn't
+// handling the success case properly either). what we want to do is:
 // if we call the `parse` function on a string that is not a number, that
-// function will return a `ParseIntError`, and in that case, we want to
+// function will return a `parseinterror`, and in that case, we want to
 // immediately return that error from our function and not try to multiply
 // and add.
 
-// There are at least two ways to implement this that are both correct-- but
-// one is a lot shorter! Execute `rustlings hint errors2` for hints to both ways.
-
-// I AM NOT DONE
+// there are at least two ways to implement this that are both correct-- but
+// one is a lot shorter! execute `rustlings hint errors2` for hints to both ways.
 
 use std::num::ParseIntError;
 
 pub fn total_cost(item_quantity: &str) -> Result<i32, ParseIntError> {
     let processing_fee = 1;
     let cost_per_item = 5;
-    let qty = item_quantity.parse::<i32>();
-
+    // returns a result so you need to check it
+    let qty = item_quantity.parse::<i32>()?;
+    // match qty {
+    //     Ok(qty) => Ok(qty * cost_per_item + processing_fee),
+    //     Err(error) => Err(error),
+    // }
     Ok(qty * cost_per_item + processing_fee)
 }
 

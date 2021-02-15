@@ -4,7 +4,7 @@ Rust is a systems programming language.
 
 It's easier because you can iterate very often while writing code the write-compile-correct cycle using `cargo run`: this commands will remove lots of bugs by indicating errors at compile time != python. In this way, it's easier to test also, since most of the errors are already caught. :)
 
-Great package managing system `cargo` that allows a identitical and consistent respecting the requirements specified in the `Cargo.tolm` so Rustaceans are able to write smaller projects that are assembled from a number of packages. :)
+Great package managing system `cargo` that allows a identical and consistent respecting the requirements specified in the `Cargo.tolm` so Rustaceans are able to write smaller projects that are assembled from a number of packages. :)
 
 
 https://blog.discord.com/why-discord-is-switching-from-go-to-rust-a190bbca2b1f :) :)
@@ -28,13 +28,13 @@ There are multiple trade-offs to consider in addition to the prevention of bugs.
 
 Rust is a statically typed language. The compiler can usually infer what type we want to use based on the value and how we use it. In cases when many types are possible, must annotate otherwise compiler error.
 
-**Tuples** have fixed lenght. Can be unpacked as in python. python `__getitem__` is `.`
+**Tuples** have fixed length. Can be unpacked as in python. Python `__getitem__` is `.`
 
-**Arrays** have fixed lenght. They have all elements of the same type. Array’s type by using square brackets, and within the brackets include the type of each element, a semicolon, and then the number of elements in the array. You can init an arry like this `let a = [3;5]` that will create an array of 5 elements, all 3s.  python `__getitem__` is `[]` like in python. Invalid indexing (like out of bound) does not result in compilation error but in panicking (runtime error). This is the first example of Rust’s safety principles in action. In many low-level languages, this kind of check is not done, and when you provide an incorrect index, invalid memory can be accessed. Rust protects you against this kind of error by immediately exiting instead of allowing the memory access and continuing :). Iterating on arrays, see loops section.
+**Arrays** have fixed length. They have all elements of the same type. Array’s type by using square brackets, and within the brackets include the type of each element, a semicolon, and then the number of elements in the array. You can init an array like this `let a = [3;5]` that will create an array of 5 elements, all 3s.  Python `__getitem__` is `[]` like in python. Invalid indexing (like out of bound) does not result in compilation error but in panicking (runtime error). This is the first example of Rust’s safety principles in action. In many low-level languages, this kind of check is not done, and when you provide an incorrect index, invalid memory can be accessed. Rust protects you against this kind of error by immediately exiting instead of allowing the memory access and continuing :). Iterating on arrays, see loops section.
 
 **range:** `(1..4)`
 
-**strings:** are mutable, != literals which are not. E.g. `let mut s = String::from("hello");` is string used when we dont know the value while coding. `let s = "hello";` is a litteral, immutable, like C++ if I remember correctly.
+**strings:** are mutable, != literals which are not. E.g. `let mut s = String::from("hello");` is string used when we don't know the value while coding. `let s = "hello";` is a literal, immutable, like C++ if I remember correctly.
 
 ## 3.3 Functions
 
@@ -42,14 +42,14 @@ Rust is a statically typed language. The compiler can usually infer what type we
 
 **Statements** are instructions that perform some action and do not return a value. Function definitions are also statements. You can't do `x = y = 6` since `y = 6` does not return anything != C.
  
-**Expressions** evaluate to a resulting value. if is an expression. The block that we use to create new scopes, `{}`, e.g.: 
+**Expressions** evaluate to a resulting value. If is an expression. The block that we use to create new scopes, `{}`, e.g.: 
 ```
 let y = {
 	let x = 3;
 	x + 1  // do not use ';' else if won't return anything, it will become a statement instead of an expression?
 };
 ```
-so `y` wil be equal to `4`, != python.
+so `y` will be equal to `4`, != python.
 
 **ternary operator:** `let y = if condition { 5 } else { 3 };`. Remember this is wrong `let number = if condition { 5 } else { "six" };` because `if and else have incompatible types` :)
 
@@ -91,7 +91,7 @@ instead of passing the structure directly.
 **looping over arrays:** `for element in a.iter()`
 
 # 4 Memory management
-Memory is managed through a system of ownership with a set of rules that the compiler checks at **compile** time. The Rust language gives you control over your memory usage in the same way as other systems programming languages, but having the owner of data automatically clean up that data when the owner goes out of scope means you don’t have to write and debug extra code to get this control.
+Memory is managed through a system of ownership with a set of rules that the compiler checks at **compile** time. The Rust language gives you control over your memory usage in the same way as other systems programming languages, but having the owner of data automatically clean up that data when the owner goes out of scope means you don't have to write and debug extra code to get this control.
 
 ## Stack & heap: ownership
 All data stored on the stack must have a known, fixed size, e.g. int, floats, arrays, tuples. Data with an unknown size at compile time or a size that might change must be stored on the heap instead, i.e. string. Types such as integers that have a known size at compile time are stored entirely on the stack.
@@ -102,7 +102,7 @@ Objects' memory is freed whenever the scope of the variable of the object is out
 
 **Managing heap data is why ownership exists.**
 
-**moving vs borrowing:** from [this good blog](https://hashrust.com/blog/memory-safety-in-rust-part-2/). when using obects stored on the heap (e.g. String `s1` and `s2`), assignment `s2 = s1` creates a shallow copy + invalidates `s1`, and thus `s1` does not exist anymore, since it has been "moved" to `s2`: you cant use `s1` but you can use `s2`. !! THIS IS NOT TRUE FOR PRIMITIVE LIKE INTEGERS THAT STAY ON THE STACK (AND NOT ON THE HEAP) AND THUS HAVE THE COPY TRAIT! [see here](https://hashrust.com/blog/moves-copies-and-clones-in-rust/). Avoid 1st memory safety bug *double free* error :) When you say reference you say borrowing, but the opposite is not true, for instance a slice is another type that borrows but is not a reference. But remember **moving** (move the owner) != **borrowing** (do not move the owner), eg: 
+**moving vs borrowing:** from [this good blog](https://hashrust.com/blog/memory-safety-in-rust-part-2/). When using objects stored on the heap (e.g. String `s1` and `s2`), assignment `s2 = s1` creates a shallow copy + invalidates `s1`, and thus `s1` does not exist anymore, since it has been "moved" to `s2`: you cant use `s1` but you can use `s2`. !! THIS IS NOT TRUE FOR PRIMITIVE LIKE INTEGERS THAT STAY ON THE STACK (AND NOT ON THE HEAP) AND THUS HAVE THE COPY TRAIT! [see here](https://hashrust.com/blog/moves-copies-and-clones-in-rust/). Avoid 1st memory safety bug *double free* error :) When you say reference you say borrowing, but the opposite is not true, for instance a slice is another type that borrows but is not a reference. But remember **moving** (move the owner) != **borrowing** (do not move the owner), eg: 
 ```
 let v: Vec<i32> = Vec::new(); 
 let v1 = v;//v1 is the new owner 
@@ -114,7 +114,7 @@ let v1 = &v;//v1 has borrowed from v
 v.len();//fine
 v1.len();//also fine
 ```
-That is you can only have 1 owner and the ownership of one object can be moved to another obect; in borrowing, multiple object can ref the same object. But:
+That is you can only have 1 owner and the ownership of one object can be moved to another object; in borrowing, multiple object can ref the same object. But:
 1. a borrower cannot access the resource after the owner has destroyed it, avoid **use-after-free bug** :)
 2. **mutable borrowing:** by default borrowing is immutable, to specify mutability you need `mut` everywhere: in the init of object you're borrowing, in the signature function and in the call -> although there can be multiple shared references, there can only be one mutable reference at one time, avoid **dangling pointers**
 3. The scope in which the variable s is valid is the same as any function parameter’s scope, but we don’t drop what the reference points to when it goes out of scope because we don’t have ownership. When functions have references as parameters instead of the actual values, we won’t need to return 
@@ -187,17 +187,17 @@ The if let syntax lets you combine if and let into a less verbose way to handle 
 
 A crate is file with some code; can be a binary (`src/main.rs`) or a library (`src/lib.rs`). The functions within a library are used by the binaries usually.
 
-Each crate has a crate root and `src/main.rs` is the crate root of a binary crate with the same name as the package; similary, `src/lib.rs` is the crate root of a library crate with the same names as the package. Cargo passes the crate root files to rustc to build the library or binary. A package can have multiple binary crates by placing files in the src/bin directory.
+Each crate has a crate root and `src/main.rs` is the crate root of a binary crate with the same name as the package; similarly, `src/lib.rs` is the crate root of a library crate with the same names as the package. Cargo passes the crate root files to rustc to build the library or binary. A package can have multiple binary crates by placing files in the src/bin directory.
 
 The children modules have access to the parent modules' functions, but the opposite is not true. Rust makes everything private by default. When you have a `struct` that have some private fields, you need to create a public constructor.
 
-[Rust's module paths are not tied directly to the filesystem](https://dev.to/stevepryde/intro-to-rust-modules-3g8k)! When you do `mod cat` in your main, rust will look for either `cat.rs` at the same level of your `main.rs` or for `cat/mod.rs` so a `cat` directory. Remember that everything is private by default in rust.
+[Rust's module paths are not tied directly to the file system](https://dev.to/stevepryde/intro-to-rust-modules-3g8k)! When you do `mod cat` in your main, rust will look for either `cat.rs` at the same level of your `main.rs` or for `cat/mod.rs` so a `cat` directory. Remember that everything is private by default in rust.
 
 When you import into some files others than `main.rs` or `lib.rs` you need to add `crate::mymode::myf`, that is the keyword `crate`.
 
 # Extra what I've learnt
 
-- Try to do it general: `first_world(&str) -> &str` works with string litteral as well as with String: see [here](https://doc.rust-lang.org/book/ch04-03-slices.html#string-slices-as-parameters)
+- Try to do it general: `first_world(&str) -> &str` works with string literal as well as with String: see [here](https://doc.rust-lang.org/book/ch04-03-slices.html#string-slices-as-parameters)
 
 - When parameters in a function are related but separated, that is not good! area(width, height) not good since the 2 parameters are related (we want to compute the area of a rectangle, not of an height with width), from [here](https://doc.rust-lang.org/book/ch05-02-example-structs.html)
 
@@ -254,6 +254,94 @@ for word in text.split_whitespace() {
 	*count += 1; // deref since or_insert returns a mut ref
 }
 ```
+# Chap9: Error handling
+
+The operator `?` can be used only with function returning an type that implements `std::ops::Try`, mainly `Result` or `Option`. Therefore, if you want to use it in your `main`, you need to change the main such that it returns a `Result`:  `main() -> Result<(), Box<dyn Error>>`, which is a collection of pointers pointing to errors or results.
+
+`expect`, `unwrap` and `unwrap_else` are shortcuts for `match` expressions: they evaluate the `Result` by either panicking or returning the value associated to `T` (remember that `Result` is a enum of generics `Result<T, E>`).
+
+When you `panic!` no way to recover, stop the program. On the other hand, using `Result` will allow the calling function to decide whether to recover or to `panic!`, such as:
+
+```
+        let guess: i32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_) => continue,
+        };
+
+```
+or similarly,
+
+```
+        let guess: i32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_) => panic!("Error"),
+        };
+
+```
+Remember that the operator `?` can be used to simply the pattern matching, but need to be used in a function that returns `Result` because it returns either an `Err` or a `Ok`, and must be placed after a function that returns `Result`, such as `item_quantity.parse::<i32>()?`. Indeed, if the value of the `Result` is an `Ok`, the value inside the `Ok` will get returned from this expression, and the program will continue. If the value is an `Err`, the `Err` will be returned from the whole function as if we had used the return keyword so the error value gets propagated to the calling code. 
+
+You can also try catch error with the `if let Ok(value)`:
+
+```
+
+fn main() {
+    if let Ok(s) = std::str::from_utf8(&[195, 40]) {
+        println!("{}", s);
+    } else {
+        println!("Yo")
+    }
+}
+```
+
+does not panick, instead print `Yo`.
+
+# Chap10 
+
+## 10.1 Generics
+
+The definition of this function `fn largest<T>(list: &[T]) -> &T {` must be read as following: the function `largest` is generic over some type `T`. Remember that `T` means that it could be any type, but it must be consistent within the function. For instance, consider the structure `std::collections::HashMap`, it is defined as `pub struct HashMap<K, V, S = RandomState> { /* fields omitted */ }`, meaning that for one instance of this structure, all the keys must be of the same type, and similarly all the values too. Therefore, if you try to insert into a `HashMap` of `string, integer` an item `string, float` since this particular object contains only `string` as keys and `int` as values (!= python).
+
+When you recognize situations in your code with multiple struct or enum definitions that differ only in the types of the values they hold, you can avoid duplication by using generic types instead.
+
+```
+struct Point<T> {
+    x: T,
+    y: T,
+}
+     |----- this type in the angle brackets tells the compiler that T in Point is a generic type rather than a concrete type
+     |        |----- specify that we’re implementing methods on the type Point<T>
+     v        v
+impl<T> Point<T> {
+    fn x(&self) -> &T {
+        &self.x
+    }
+}
+```
+
+No performance overhead at runtime since Rust performs monomorphization is the process of turning generic code into specific code by filling in the concrete types that are used when compiled. The compiler looks at all the places where generic code is called and generates code for the concrete types the generic code is called with, for instance it transforms `Option<T>` into `Option_i32` and `Option_f64` when writing `Option(3)` and `Option(3.2)`. 
+
+## Traits
+
+Traits are something multiple types can have in common. They are called `interfaces` in other programming languages and they are similar to the abstract virtual method in C++: if you use a trait for a type, you need to implement the trait for that type otherwise the code will not compile (similar to subclasses of abstract classes in C++). Traits obey to the orphan rules, that is you can only implement:
+
+1. one of your traits on anyone's type
+2. anyone's trait on one of your types (operator overloading, see [here](https://fasterthanli.me/articles/a-half-hour-to-learn-rust) and search for *type Output = Number;*)
+3. but not a foreign trait on a foreign type
+
+**default implementations:** you can use default implementations (!= C++ abstract classes). And you call the default implementation of a trait for a type overriding the implementation of that trait (similar to using void methods but without a reference in C++, that is using the resolution statique des liens, see [here](https://youtu.be/_2pt_aZ1EjM?t=336)).
+
+**methods for objects implementing specific trait:** traits can be used to create methods that work only with instances of types that implement that trait: `pub fn notify(item: &impl Summary)`, `notify` can be called with any objects implementing the trait `Summary`. The notation `impl` is syntactic sugar for pub `fn notify<T: Summary>(item: &T)`. When you have more than 1 argument with the same trait it is better to use that notation: `pub fn notify<T: Summary>(item1: &T, item2: &T)` instead of `pub fn notify(item1: &impl Summary, item2: &impl Summary)`.
+
+Can specify more than 1 trait: `pub fn notify(item: &(impl Summary + Display))` or equivalently `pub fn notify<T: Summary + Display>(item: &T)`. For many traits you can use the `where` clause: 
+
+```
+fn some_function<T, U>(t: &T, u: &U) -> i32
+    where T: Display + Clone,
+          U: Clone + Debug
+```
+You can also return traits: `fn returns_summarizable() -> impl Summary`. 
+
+By using a trait bound with an `impl` block that uses generic type parameters, we can implement methods conditionally for types that implement the specified traits, see [here](https://doc.rust-lang.org/book/ch10-02-traits.html#using-trait-bounds-to-conditionally-implement-methods). We can also use the notation `impl<T: Display> ToString for T` which means implement the trait `ToString` for all types defining the trait `Display`. This is called *blanket implementations*.
 
 # Chap15: Smart pointers
 
@@ -263,12 +351,12 @@ Smart pointers in C++ will free the memory automatically. `Vec` and `String` are
 
 - Drop: destructor, used to free the memory
 
-They are stored on the stack but they point to data on the heap and they own the data, contratly to references do not own the data!. By the way, this is exactly as in C++, since the references need to point to a variable (cannot be null). 
+They are stored on the stack but they point to data on the heap and they own the data, on the contrary to references do not own the data!. By the way, this is exactly as in C++, since the references need to point to a variable (cannot be null). 
 
 ## Boxes
-`Box<T>` are stored on the stack, but the data pointed is on the heap. In C++ analogy, `let b = Box::new(3)` will correspond to the call `shared_ptr<int> p(new int(3))` which allocates some memory (on rust on the stack) for `p` knowing that it will point to some int; then, at runtime, create a int variable (on rust at compile time?? I think at runtime, on the heap) with value of 3 and stores its adress into `p`. Once deleted `p` the memory is deallocated of both `p` (and `p` is set to `nullptr`) and the `int` variable with value of 3.
+`Box<T>` are stored on the stack, but the data pointed is on the heap. In C++ analogy, `let b = Box::new(3)` will correspond to the call `shared_ptr<int> p(new int(3))` which allocates some memory (on rust on the stack) for `p` knowing that it will point to some int; then, at runtime, create a int variable (on rust at compile time?? I think at runtime, on the heap) with value of 3 and stores its address into `p`. Once deleted `p` the memory is deallocated of both `p` (and `p` is set to `nullptr`) and the `int` variable with value of 3.
 
-Used to create recursive types, that are types representing objects that have no fixed size at compile time: the compiler will know that we need to store the pointer to something on the heap. It is like `String` that is a struct that will point to some data on the heap because it is not known at compile time: user can insert whaterver he wants at runtime. 
+Used to create recursive types, that are types representing objects that have no fixed size at compile time: the compiler will know that we need to store the pointer to something on the heap. It is like `String` that is a struct that will point to some data on the heap because it is not known at compile time: user can insert whatever he wants at runtime. 
 
 See this example: 
 ```

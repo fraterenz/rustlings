@@ -5,7 +5,16 @@ Read the book and at the same time do rustlings, have a look at [half-hour to ru
 2. [autograd](https://github.com/raskr/rust-autograd)
 3. dbug
 
-The language takes advantages of the behaviours embedded into the variables' types: choose the type of your variable based on the tasks these variables need to perform. Similar to [C++ operator overloading](https://youtu.be/DnT-LUQgc7s?t=774).
+## Talks
+
+- [Jon Gjengset](https://www.youtube.com/watch?v=DnT-LUQgc7s)
+- [Niko Matsakis](https://www.youtube.com/watch?v=jQOZX0xkrWA)
+
+The language takes advantages of the behaviours embedded into the variables' types: choose the type of your variable based on the tasks these variables need to perform. Similar to [C++ operator overloading](https://youtu.be/DnT-LUQgc7s?t=774). For instance, the null pointer example encapsulated into a `Option` enum, see [here](#no-hidden-states). Remember that `Option` is a enum (similar to a type) and `Some` and `None` are the values that a variable `Option` can take, so the data is `Some` or `None` but the type is `Option`.
+
+# Goals of rust: Niko Matsakis
+
+- Provide memory safety when resources matter (speed and cpu usage?), that is zero cost abstraction e.g. generics and functional
 
 # Algebraic types and pattern matching
 
@@ -128,24 +137,18 @@ val.push(12);
 Great flexibility in rust module system since rust's module paths are not tied directly to the filesystem: hierarchically split code in logical units (modules), and manage visibility (public/private) between them.
 
 # To panic! or not to panic!
-When you `panic!` no way to recover, stop the program. On the other hand, using `Result` will allow the calling function to decide whether to recover or to `panic!`, such as:
+With errors you can either panic or not. In order to panic you can:
 
-```
-        let guess: i32 = match guess.trim().parse() {
-            Ok(num) => num,
-            Err(_) => continue,
-        };
+1. `.unwrap()` a `Result`
+2. `.expect("my message")` a `Result` you can add a message
+3. `match` with `Err(e) => panic!(e)`
+.4 use the `?` operator after a `Result`
 
-```
-or similarly,
+To not panic you can:
 
-```
-        let guess: i32 = match guess.trim().parse() {
-            Ok(num) => num,
-            Err(_) => panic!("Error"),
-        };
+1. `if let` see rustlings `exercices/option2.rs`
+2. `match` with `Err(e) => println!("Warning")`
 
-```
 # Modern language
 The compiler knowns about:
 
@@ -154,9 +157,10 @@ The compiler knowns about:
 - buit-in dependencies and dependecy graph: each time you compile your program, the dependencies in the `.toml` file will be fetched with `cargo build`. Up to date version of the dependency without breaking (since if you specify `1.3.2` it will fecth everything greather than that, but smaller than `2.0.0`, since semantically that version should cause breaking changes in the code).
 
 But, no pre-built libraries: need to build everything from source. This is mainly due to generics `<T>`: if the library I want to use has generics, I need to compile the version of the method for the type I'm using, which is defined in my library.
+
 # No hidden states
 
-No null pointer, you need to check the `Option` and the `Result` enums (the latter checked with `?` the try operator: `"42".parse()?` returns error or unwrap)
+No null pointer, you need to check the `Option` and the `Result` enums (the latter checked with `?` the try operator: `"42".parse()?` returns error or unwrap). The data type `Option` tells you whether the object could be `None`.
 
 # Data modelling
 
