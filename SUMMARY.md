@@ -34,7 +34,7 @@ if let Number { odd: true, value } = n {
 
 In a match block, the compiler ensures that you have exhausted and thought about all the possibilities that could match. Else, error (you can use `_` to match all the things you haven't listed).
 
-# Functions
+# Functions and Methods
 
 There are [3 possible ways to create bindings](https://www.possiblerust.com/guide/how-to-read-rust-functions-part-1) between function parameters and arguments:
 
@@ -44,6 +44,9 @@ There are [3 possible ways to create bindings](https://www.possiblerust.com/guid
 
 `Copy` is a trait indicating a type is “trivially copyable,” meaning it can be copied with only a call to `memcpy`, so all the data contained in the structure is contiguous; there are no pointers to chase. `Copy` tells us that copying a piece of data is fast.
 
+Methods are different from functions, since method are defined on an object (an instance of a `Struct` for instance). However, methods can take ownership (as functions) of `self`, borrow `self` immutably as we’ve done here, or borrow `self` mutably, just as they can any other parameter.
+
+Methods used the keyword `self` as argument since Rust knows the type of `self` is the same of the object due to this method being inside the `impl` context. See also the [automatic dereferencing process](#modern-language).
 
 # Memory management
 Managing memory at compile time (pointers checks) is the key point of rust. When that is not possible (e.g. user input non defined at compile time but at runtime), rust stored data on the heap (e.g. `Vec`, `Box` or `String`). I think that most of the things that are stored on the heap binds to the variable using smart pointers, more specifically `unique_ptr` in C++, see [here](https://youtu.be/CaZP-1ETL-o?t=377). 
@@ -135,7 +138,19 @@ val.push(12);
 
 Great flexibility in rust module system since rust's module paths are not tied directly to the filesystem: hierarchically split code in logical units (modules), and manage visibility (public/private) between them.
 
+# Bring paths into scope with `use`
+The convention is to always bring to scope the parent module to avoid confusion (`use std::env` and then `env::args` instead of directly `std::env::args`) except for structs, enums, and other items where you should use the second convention, that is `std::collections::HashMap`. 
+
 # To panic! or not to panic!
+To panic! is more appropriate for a programming problem than a usage problem. For the latter is better to return a `Result` from the function, and in the caller block (like the `main` for instance), you can `unwrap_or_else` the `Result`. Doing so, the value will be `unwrap`ped if the function returned an instance of an `Ok`, else it will print an string that you want, and then you can exit the program from [here](https://doc.rust-lang.org/book/ch13-03-improving-error-handling-and-modularity.html#calling-confignew-and-handling-errors):
+
+```
+let config = Config::new(&args).unwrap_or_else(|err| {
+    println!("Problem parsing arguments: {}", err);
+    process::exit(1);
+});
+```
+
 With errors you can either panic or not. In order to panic you can:
 
 1. `.unwrap()` a `Result`
@@ -145,9 +160,16 @@ With errors you can either panic or not. In order to panic you can:
 
 To not panic you can:
 
-1. `if let` see rustlings `exercices/option2.rs`
+1. `if let` see rustlings `exercices/option2.rs` and [here](https://doc.rust-lang.org/book/ch12-03-improving-error-handling-and-modularity.html#handling-errors-returned-from-run-in-main); `if let` used also when you call a function that does not return anything except an error in case of failure
 2. `match` with `Err(e) => println!("Warning")`
 
+# Lifetimes and references
+
+Lifetimes are there to avoid dangling references, only used when references! There are 3 rules that the borrow checker applies in order to assign a lifetime to each reference:
+
+1. Each reference has one lifetime
+2. If a function has only one input reference, then the output reference will have the same lifetime of the input reference
+3. if there are multiple input lifetime parameters, but one of them is `&self` or `&mut self` because this is a method, the lifetime of self is assigned to all output lifetime parameters
 # Modern language
 The compiler knowns about:
 
@@ -157,11 +179,36 @@ The compiler knowns about:
 
 But, no pre-built libraries: need to build everything from source. This is mainly due to generics `<T>`: if the library I want to use has generics, I need to compile the version of the method for the type I'm using, which is defined in my library.
 
+- automatic referencing and dereferencing: when you have pointers such as `Vec` or `String`, calling `method` on the pointer, `my_vec.method`, will automatically dereference the pointer `my_vec` and call `method` on the pointed object (not like C++ where you have to derefence explicitly doing `(&p1).distance(&p2);`, see [here](https://doc.rust-lang.org/book/ch05-03-method-syntax.html?highlight=impl#wheres-the---operator).
+
 # No hidden states
 
 No null pointer, you need to check the `Option` and the `Result` enums (the latter checked with `?` the try operator: `"42".parse()?` returns error or unwrap). The data type `Option` tells you whether the object could be `None`.
 
 # Data modelling
 
-if you need to create an object that can be shared by either two different kind of resources (such as shared with one or more recipients **or** received from a source), see [here](https://www.reddit.com/r/rust/comments/l594zl/everywhere_i_go_i_miss_rusts_enums/gkteafc?utm_source=share&utm_medium=web2x&context=3)
+- *primitive obsession:* when a complex pattern would suite better the problem compared to primitive types, e.g. when two pieces of data are related to each other and instead of being grouped into a Struct, they are stored as tuple or array, see [here](https://doc.rust-lang.org/book/ch12-03-improving-error-handling-and-modularity.html#grouping-configuration-values).
+- if you need to create an object that can be shared by either two different kind of resources (such as shared with one or more recipients **or** received from a source), see [here](https://www.reddit.com/r/rust/comments/l594zl/everywhere_i_go_i_miss_rusts_enums/gkteafc?utm_source=share&utm_medium=web2x&context=3)
 
+# Reading the doc with an example
+The `std::iter::Iterator` trait:
+
+1. is associated to the type `Item`
+2. `next` is the only required method to use this trait
+3. provides other methods
+4. has several functions
+
+The function `chain` for instance, takes as input an iterator `self` and generic type that implements the trait `IntoIterator`, and all the types implementing that trait can be found clicking on the trait, linked to the [doc of the trait](https://doc.rust-lang.org/std/iter/trait.IntoIterator.html#implementors). It returns a new `Iterator`, a struct `Chain`. Note that it takes the ownership of `self` meaning that it create a new iterator and invalidate the previous one (by consuming it?), that is why in many examples you see `myarray.iter().sum()`, that is they do not create a variable `let myiter = myarray.iter()`, since `myiter` will not be available after the `sum()` call.
+
+`pub fn sum<S>(self) -> S where  S: Sum<Self::Item>,` means that the method returns an object of generic type `S` that implements the trait `Sum`, it does not mean that the method returns the `Sum` trait.
+
+# Key points to remember
+
+- binary application vs library
+- primitive obsession
+- Test-driven development (TDD) process
+- methods vs functions
+- automatic dereferencing
+- stack vs heap
+- to panic or not
+- integration vs unittest

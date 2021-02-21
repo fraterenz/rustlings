@@ -343,6 +343,37 @@ You can also return traits: `fn returns_summarizable() -> impl Summary`.
 
 By using a trait bound with an `impl` block that uses generic type parameters, we can implement methods conditionally for types that implement the specified traits, see [here](https://doc.rust-lang.org/book/ch10-02-traits.html#using-trait-bounds-to-conditionally-implement-methods). We can also use the notation `impl<T: Display> ToString for T` which means implement the trait `ToString` for all types defining the trait `Display`. This is called *blanket implementations*.
 
+## Lifetimes
+Lifetimes are here to avoid dangling references. Before reading the book, watch [Doug's video](https://www.youtube.com/watch?v=1QoT9fmPYr8).
+
+One and only one owner of memory, but you can have different references to the same memory, it is independent of the data type, but used on references. Lifetimes ensure that this behaviour is safe, for all the references there is a lifetime (explicit or implicit). First example from [Doug](https://youtu.be/1QoT9fmPYr8?t=130), lifetimes are used to ensure that memory does not cleaned up before a reference can use it:
+
+```
+fn main() {
+    let a;
+    {
+        b = String::from("Meow");
+        // move b into a
+        a = b;
+        // but if we had used instead a ref to b, a = &b
+        // error since the owner of Meow is still be, since no
+        // moved occured, and once b goes out of scope it is 
+        // dropped and a points to garbage!!
+    }  // here b goes out of scope, but Meow still exists
+    // because it was moved into a
+    // a is still valid here and points to Meow
+    println!("{}", a);
+}
+```
+Lifetime denoted by `'a`. Lifetimes can be compared `'a > 'b`, when a variable outlives a reference lifetime that points to it, it is a problem, since the variable will be bound to a invalid reference. For instance, comparing two string and returns the longest, using references that is string slices. When using two arguments of a function that are references, you usually need to specify that both references have the same lifetime, because rust by default [puts different lifetimes to different references](https://youtu.be/1QoT9fmPYr8?t=1045). Lifetime `'static` ensures that the reference live for the whole code, useful in parameters of functions.
+
+There are 3 rules that the borrow checker applies in order to assign a lifetime to each reference:
+
+1. Each reference has one lifetime
+2. If a function has only one input reference, then the output reference will have the same lifetime of the input reference
+3. if there are multiple input lifetime parameters, but one of them is `&self` or `&mut self` because this is a method, the lifetime of self is assigned to all output lifetime parameters
+# Tests
+Tests fail when they panic. When using macros such as `assert_eq` or `assert_neq` you must be sure that the values tested implements both the `Debug` and the `PartialEq`traits. Macro attribute `should_panic(expected = "Guess value must be less than or equal to 100")]` with the message expected that we want to test. 
 # Chap15: Smart pointers
 
 Smart pointers in C++ will free the memory automatically. `Vec` and `String` are examples of smart pointers in rust, which are basically structs implementing the `Deref` and `Drop` traits:
