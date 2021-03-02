@@ -1,4 +1,6 @@
-The language takes advantages of the behaviours embedded into the variables' types: choose the type of your variable based on the tasks these variables need to perform. Similar to [C++ operator overloading](https://youtu.be/DnT-LUQgc7s?t=774). For instance, the null pointer example encapsulated into a `Option` enum, see [here](#no-hidden-states).
+Rust is a strongly-type language: 
+- the language takes advantages of the behaviours embedded into the variables' types: choose the type of your variable based on the tasks these variables need to perform. Similar to [C++ operator overloading](https://youtu.be/DnT-LUQgc7s?t=774). For instance, the null pointer example encapsulated into a `Option` enum, see [here](#no-hidden-states)
+- types must have a fixed sized at compile type, see [recursive types with `Box`](https://doc.rust-lang.org/book/ch15-01-box.html#enabling-recursive-types-with-boxes).
 
 Rust provides memory safety when resources matter (speed and cpu usage in the system programming field) that is low-level language, memory safe with zero cost abstraction.
 
@@ -16,7 +18,9 @@ Read the book and at the same time do rustlings, have a look at [half-hour to ru
 
 # Algebraic types and pattern matching
 
-Remember that `Option` is a enum (similar to a type) and `Some` and `None` are the values that a variable `Option` can take, so the data is `Some` or `None` but the type is `Option`.
+In a `struct` or `enum`, the data in the `struct` fields and the behavior in `impl` blocks are separated, which is different from other programming languages.
+
+Remember that `Option` is a `enum` (similar to a type) and `Some` and `None` are the values that a variable `Option` can take, so the data is `Some` or `None` but the type is `Option`.
 ```
 if let Some(f) = my_vec.find(|t| t >= 42) {
         // found or None; brackets because if?
@@ -38,9 +42,9 @@ In a match block, the compiler ensures that you have exhausted and thought about
 
 There are [3 possible ways to create bindings](https://www.possiblerust.com/guide/how-to-read-rust-functions-part-1) between function parameters and arguments:
 
-1. by-value (meaning in Rust that it either takes ownership of the bound value, or makes a copy of it, depending on whether the type of that value implements the `Copy` trait)
-2. by-reference
-3. by-mutable-reference
+1. by-value (meaning in Rust that it either takes ownership of the bound value, or makes a copy of it, depending on whether the type of that value implements the `Copy` trait), consumes the original variable (invalidate the original binding) if the data is on the heap (because it is a shallow copy of smart unique pointers, allowing one owner at the tine)
+2. by-reference (can have many immutable references, like in C++ with unique ptr)
+3. by-mutable-reference (only one mut reference, cannot have a mutable and an immutable reference at the same time)
 
 `Copy` is a trait indicating a type is “trivially copyable,” meaning it can be copied with only a call to `memcpy`, so all the data contained in the structure is contiguous; there are no pointers to chase. `Copy` tells us that copying a piece of data is fast.
 
@@ -80,7 +84,7 @@ So, with a string s, depending on what you want to do, you can:
 
 **Borrowing rules (references):**
 1. Can't have a mutable and an immutable ref (borrowing) at the same time
-2. Max 1 mut reference or several immutable refs
+2. Max 1 mut reference (counting also the owner! that is if the owner has `mut` the ref cannot have `mut` too) or several immutable refs
 
 When data is on the heap, the value `s1` bound to the data is only a pointer! Rust will never automatically create “deep” copies of your data. Therefore, any automatic copying can be assumed to be inexpensive in terms of runtime performance. To create deep copies `clone` trait.
 
@@ -207,8 +211,17 @@ The function `chain` for instance, takes as input an iterator `self` and generic
 - binary application vs library
 - primitive obsession
 - Test-driven development (TDD) process
-- methods vs functions
+- methods ([traits](https://doc.rust-lang.org/book/ch13-02-iterators.html#the-iterator-trait-and-the-next-method), structs and [enums](https://doc.rust-lang.org/rust-by-example/custom_types/enum/testcase_linked_list.html)) vs functions
 - automatic dereferencing
 - stack vs heap
 - to panic or not
 - integration vs unittest
+- redirect error to stderr `cargo run > output.txt` should not contain any errors
+- `if let Err(e) = erronous_function { eprintln!("ERR"); process:exit(1) }` when you want only to print and exit
+- `let A = if mybool { 1 } else { 2 };` is cool, remember the `;` to complete the `let` statement
+- shadowing, borrowing, heap and mutability
+- smart pointers vs struct, indirection
+- interior mutability
+- rust has **not** inheritance: use traits and generics (bounded parametric polymorphism)
+- to implement Object-Oriented Design Pattern in rust you transformation of types [see here](https://doc.rust-lang.org/book/ch17-03-oo-design-patterns.html#implementing-transitions-as-transformations-into-different-types)
+- `collect` with iterators is powerful because you can create several different data objects with the same code, just changing the type of the expected result (see rustlings ex `iterators3.rs`)

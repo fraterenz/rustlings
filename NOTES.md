@@ -372,8 +372,18 @@ There are 3 rules that the borrow checker applies in order to assign a lifetime 
 1. Each reference has one lifetime
 2. If a function has only one input reference, then the output reference will have the same lifetime of the input reference
 3. if there are multiple input lifetime parameters, but one of them is `&self` or `&mut self` because this is a method, the lifetime of self is assigned to all output lifetime parameters
+
 # Tests
 Tests fail when they panic. When using macros such as `assert_eq` or `assert_neq` you must be sure that the values tested implements both the `Debug` and the `PartialEq`traits. Macro attribute `should_panic(expected = "Guess value must be less than or equal to 100")]` with the message expected that we want to test. 
+
+# Chap13: Closures
+Unlike functions, closures can capture values from the scope in which they’re defined. Closures are usually short and relevant only within a narrow context rather than in any arbitrary scenario.
+
+
+Interesting example of closures + `struct` + `HashMap` in [chap13.1, the `Cacher`](https://doc.rust-lang.org/book/ch13-01-closures.html#limitations-of-the-cacher-implementation).
+
+Closures can capture values from their environment in three ways, which directly map to the three ways a function can take a parameter: taking ownership, borrowing mutably, and borrowing immutably. When a closure captures a value from its environment, it uses memory to store the values for use in the closure body. 
+
 # Chap15: Smart pointers
 
 Smart pointers in C++ will free the memory automatically. `Vec` and `String` are examples of smart pointers in rust, which are basically structs implementing the `Deref` and `Drop` traits:
@@ -382,12 +392,12 @@ Smart pointers in C++ will free the memory automatically. `Vec` and `String` are
 
 - Drop: destructor, used to free the memory
 
-They are stored on the stack but they point to data on the heap and they own the data, on the contrary to references do not own the data!. By the way, this is exactly as in C++, since the references need to point to a variable (cannot be null). 
+They are stored on the stack but they point to data on the heap and they own the data, on the contrary to references do not own the data! By the way, this is exactly as in C++, since the references need to point to a variable (cannot be null). 
 
 ## Boxes
-`Box<T>` are stored on the stack, but the data pointed is on the heap. In C++ analogy, `let b = Box::new(3)` will correspond to the call `shared_ptr<int> p(new int(3))` which allocates some memory (on rust on the stack) for `p` knowing that it will point to some int; then, at runtime, create a int variable (on rust at compile time?? I think at runtime, on the heap) with value of 3 and stores its address into `p`. Once deleted `p` the memory is deallocated of both `p` (and `p` is set to `nullptr`) and the `int` variable with value of 3.
+`Box<T>` are stored on the stack, but the data pointed is on the heap. In C++ analogy, `let b = Box::new(3)` will correspond to the call `shared_ptr<int> p(new int(3))` which allocates some memory (on rust on the stack) for `p` knowing that it will point to some int (allocation dynamique de la memoire); then, at runtime, create a int variable (on rust at compile time?? I think at runtime, on the heap) with value of 3 and stores its address into `p`. Once deleted `p` the memory is deallocated of both `p` (and `p` is set to `nullptr`) and the `int` variable with value of 3.
 
-Used to create recursive types, that are types representing objects that have no fixed size at compile time: the compiler will know that we need to store the pointer to something on the heap. It is like `String` that is a struct that will point to some data on the heap because it is not known at compile time: user can insert whatever he wants at runtime. 
+Used to create recursive types, that are types representing types that have no fixed size at compile time. Since rust is a strongly-typed programming language, the compiler needs to know the required size for each **type**, using `Box` the compiler will store the pointer on the stack referring to some memory on the heap. It is like `String` that is a struct that will point to some data on the heap because it is not known at compile time: user can insert whatever he wants at runtime. 
 
 See this example: 
 ```
@@ -396,15 +406,107 @@ let y = Box::new(x);
 ```
 here the value pointed by `y` is another `int` (no `x`) that has the same value of `x`, that is `5`. Watch out for moves when `x` is stored on the heap, because in that case you invalidate the variable `x`, since it has been moved to `y`.
 
-# Memento
+## Determination of the space required by a non-recursive type
 
-shadowing, borrowing, heap and mutability, difference between smart pointers and normal struct
+Rust goes through each of the variants to see which variant needs the most space, because only one variant will be used, the most space a Message value will need is the space it would take to store the largest of its variants.
+
+```
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}
+```
+Boxes provide only the indirection and heap allocation.
+
+## Deref
+
+Remember that `*p` means content pointed by a pointer and `&v` means a pointer (address to a value):
+
+- `*`: input is pointer, returns value
+- `&`: input is value, returns pointer
+
+In rust you have deref coercion for all types implementing the `Deref` trait, such as `String`: it converts such a type into a reference to another type. For example, deref coercion can convert `&String` to `&str` because `String` implements the `Deref` trait such that it returns `str`. The `Deref` trait to override the `*` operator on immutable references because instead of returning the value, it will return a call to the `deref` method and then the value on this reference.
+
+## Drop
+
+Destructor, variables are dropped in the reverse order of their creation. Explicit destructor calls not allowed, to avoid the double free error because Rust would be trying to clean up the same value twice, to do that use `std::mem::drop`.
+
+## Reference counting
+
+To enable multiple ownerships for reading data only, `Rc<T>` keeps track of the number of references to a value which determines whether or not a value is still in use. If there are zero references to a value, the value can be cleaned up without any references becoming invalid. If `b` and `c` share the same data `a`, we create `b`, instead of taking ownership of `a` (which results into an error when creating `c` because `value a used after move in b`), we’ll clone the pointer `Rc<List>` that `a` is holding, thereby increasing the number of references from one (`a`) to two (`a` and `b`) and letting `a` and `b` share ownership of the data in that `Rc<List>`. We’ll also clone `a` when creating `c`, increasing the number of references from two to three. Every time we call `Rc::clone`, the reference count to the data within the `Rc<List>` will increase, and the data won’t be cleaned up unless there are zero references to it. The call `Rc::clone` doesn’t make a deep copy of all the data like most types’ implementations of clone do. To count the number of references pointing to some data pointed by a `Rc` you can call `Rc::strong_count(&a)`. 
+
+## Summary
+
+
+- `Rc<T>` enables multiple owners of the same data; `Box<T>` and `RefCell<T>` have single owners.
+- `Box<T>` allows immutable or mutable borrows checked at compile time; `Rc<T>` allows only immutable borrows checked at compile time; `RefCell<T>` allows immutable or mutable borrows checked at **runtime**.
+ - Because `RefCell<T>` allows mutable borrows checked at runtime, you can mutate the value inside the `RefCell<T>` even when the `RefCell<T>` is immutable, but the rules of borrowing still apply at runtime (meaning for instance that you cannot have [2 mutable references](https://doc.rust-lang.org/book/ch15-05-interior-mutability.html#keeping-track-of-borrows-at-runtime-with-refcellt)), **interior mutability**
+
+# Chap16: Concurrency
+
+A process is used to run a program which can have multiple threads that can run simultaneously. There is no guarantee on the order in which threads run! The return type of `thread::spawn` is `JoinHandle`. A `JoinHandle` is an owned value that, when we call the `join` method on it, will wait for its thread to finish. Calling `join` on the handle blocks the thread currently running until the thread represented by the handle terminates. 
+
+Rust can’t tell how long the spawned thread will run, so it doesn’t know if the reference to the variable `v` created into the main thread will always be valid, since the main thread could terminate before the spanning thread and thus drop the variable `v`, that is the spawned thread may outlive the main thread. But you can `move` the variable `v` from the main thread into the spawned thread, and `v` will be invalidated into the main thread.
+
+To avoid moving a value from main thread to spawned thread, you can create a `Arc` which allows multiple owners that can read only. Similar to `Rc`, you can have multiple ownership in different threads by cloning the shared value. However, since `Rc` is not thread safe, because X, you need to use `Arc` which is safe. To allow multiple ownerships clone the value `Arc::clone(&a)`. To get several mutable ownerships use `Mutex` that provides interior mutability in spawned threads using `Arc`.
+
+# OOP in rust
+No polymorphism in rust, but you can achieve dynamic dispatching (resolution dynamique des liens) using heterogenous collections like in C++, which are defined by `Box<dyn Draw>` where `Draw` is a trait. In C++ dynamic dispatch is obtained using two ingredients: pointers + virtual methods. I think the mechanism used by rust is the same as in C++, because virtual methods looks like traits, and `Box` is a pointer! The difference maybe is that not all traits can be used to create trait objects, they must obey to the following rules:
+
+1. the return type is **not** `Self`
+2. no generic type paramter
+
+To achive static dispatch, you only need generics at trait bounds (`<T: Summary>`, trait bounds used to specify that a generic can be any type that has certain behavior): at compile time, the definitions will be [monomorphized](https://doc.rust-lang.org/book/ch10-01-syntax.html#performance-of-code-using-generics) at compile time to use the concrete types, which means that rust is fast when dealing with generics while using static dispatch. **There is a runtime cost for dynamic dispatch**. Static dispatch is used in C++ by default (like in rust) by looking at the concrete type of the variable.
+
+Example of a program implementing a heterogeneous collection:
+
+```
+pub trait Draw {
+    fn draw(&self);
+}
+
+pub struct Screen {
+    pub components: Vec<Box<dyn Draw>>,
+}
+
+
+impl Screen {
+    pub fn run(&self) {
+        for component in self.components.iter() {
+            component.draw();
+        }
+    }
+    pub fn add(&mut self, drawable: Box<dyn Draw>) {
+        self.components.push(drawable);
+    }
+}
+
+pub struct Button {
+    pub width: u32,
+    pub height: u32,
+    pub label: String,
+}
+
+impl Draw for Button {
+    fn draw(&self) {
+        println!("I am a Button: {}", self.width)
+    }
+}
+
+fn main() {
+    let mut my_screen = Screen{components: Vec::new()};
+	// dynamic allocation
+    let my_button = Box::new(
+        Button { width: 32, height: 1, label: String::from("world")}
+    );
+    my_screen.add(my_button);
+    my_screen.run();
+}
+```
 
 # Why rust? book
 
-unsafe means that you can write a program that is not well-defined: meaning that you can produce undesired behaviours without raising any errors. Rust unsafe exists.
-
-# TODO
-
-continue the book and continue rustlings: `exercises/primitive_types/primitive_types4.rs` hint to understand why the test does not take a ref as input but a normal array (should be cap 15 smart pointers, in part 15.2) !
+Unsafe means that you can write a program that is not well-defined: meaning that you can produce undesired behaviours without raising any errors. Rust unsafe exists.
 
