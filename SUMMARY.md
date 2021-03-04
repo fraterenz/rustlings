@@ -1,6 +1,6 @@
 Rust is a strongly-type language: 
 - the language takes advantages of the behaviours embedded into the variables' types: choose the type of your variable based on the tasks these variables need to perform. Similar to [C++ operator overloading](https://youtu.be/DnT-LUQgc7s?t=774). For instance, the null pointer example encapsulated into a `Option` enum, see [here](#no-hidden-states)
-- types must have a fixed sized at compile type, see [recursive types with `Box`](https://doc.rust-lang.org/book/ch15-01-box.html#enabling-recursive-types-with-boxes).
+- types must have a fixed sized at compile type, see [recursive types with `Box`](https://doc.rust-lang.org/book/ch15-01-box.html#enabling-recursive-types-with-boxes), all these types implement the `Sized` trait
 
 Rust provides memory safety when resources matter (speed and cpu usage in the system programming field) that is low-level language, memory safe with zero cost abstraction.
 
@@ -38,6 +38,18 @@ if let Number { odd: true, value } = n {
 
 In a match block, the compiler ensures that you have exhausted and thought about all the possibilities that could match. Else, error (you can use `_` to match all the things you haven't listed).
 
+# Strings
+
+When you declare a binding `let a = "Yo";` you are creating a binding to a string slice which is not stored on the heap, which is not owned type. So use `String` only when you need to modify the string. Some methods to convert string slices (or in general any variable whose type implements the `Display` trait):
+
+```
+let s = "hello".to_string();  // ToString
+let s = String::from("hello"); // From
+let s: String = "hello".into(); // Into
+let s = "hello".to_owned();  // ToOwned
+```
+The slice data structure `&str` stores the starting position and the length of the slice.
+
 # Functions and Methods
 
 There are [3 possible ways to create bindings](https://www.possiblerust.com/guide/how-to-read-rust-functions-part-1) between function parameters and arguments:
@@ -51,6 +63,16 @@ There are [3 possible ways to create bindings](https://www.possiblerust.com/guid
 Methods are different from functions, since method are defined on an object (an instance of a `Struct` for instance). However, methods can take ownership (as functions) of `self`, borrow `self` immutably as we’ve done here, or borrow `self` mutably, just as they can any other parameter.
 
 Methods used the keyword `self` as argument since Rust knows the type of `self` is the same of the object due to this method being inside the `impl` context. See also the [automatic dereferencing process](#modern-language).
+
+## Closures
+
+Closures have zero cost overhead and are used when a function requires access to the context. Functions that require no context have the `fn` type, which is called a function pointer and implements all the traits used to define a closure `Fn`, `FnMut` and `FnOnce`.
+
+`let k = my_vec.iter().filter(|&&n| **n > 0).count();` since `iter` returns a reference over an item, that is `&T`(let's say `i32`, see [here](https://doc.rust-lang.org/std/iter/index.html#the-three-forms-of-iteration)) and `filter` takes a closure that in turn takes a mutable reference on the `Item` that is on `Self`, as explained by the trait bound in the doc `where, P: FnMut(&Self::Item) -> bool`, see [here](https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.filter). The trait `Fn` is used by closures to capture the values from their environment, see [here](https://stevedonovan.github.io/rustifications/2018/08/18/rust-closures-are-hard.html).
+
+**Calling a closure is executing a method on a struct**: A closure is syntactic sugar to create a struct capturing the whole environment variables by reference, unless so variables are explicitly consumed in the closure as in the example [here](https://stevedonovan.github.io/rustifications/2018/08/18/rust-closures-are-hard.html), `move |x| m*x + c` as in threads.
+
+**Storing closures** even if two closures implement `Fn` traits, since they are structures, they need to be stored in a heterogeneous collection `Box<Fn(x: f64)->f64 + 'a>`, see [here](https://stevedonovan.github.io/rust-gentle-intro/pain-points.html#references-and-lifetimes) and also [here](#OOP).
 
 # Memory management
 Managing memory at compile time (pointers checks) is the key point of rust. When that is not possible (e.g. user input non defined at compile time but at runtime), rust stored data on the heap (e.g. `Vec`, `Box` or `String`). I think that most of the things that are stored on the heap binds to the variable using smart pointers, more specifically `unique_ptr` in C++, see [here](https://youtu.be/CaZP-1ETL-o?t=377). 
@@ -174,6 +196,36 @@ Lifetimes are there to avoid dangling references, only used when references! The
 1. Each reference has one lifetime
 2. If a function has only one input reference, then the output reference will have the same lifetime of the input reference
 3. if there are multiple input lifetime parameters, but one of them is `&self` or `&mut self` because this is a method, the lifetime of self is assigned to all output lifetime parameters
+
+# OOP
+
+There is no concept of `class` in rust, because the idea of grouping data as well as methods is somewhat controversial, see [here](https://stevedonovan.github.io/rust-gentle-intro/object-orientation.html#animals) and [here](https://www.infoworld.com/article/2073649/why-extends-is-evil.html). According to [rust book](https://doc.rust-lang.org/book/ch17-01-what-is-oo.html#inheritance-as-a-type-system-and-as-code-sharing), inheritance has recently fallen out of favor as a programming design solution in many programming languages because it’s often at risk of sharing more code than necessary. Subclasses shouldn’t always share all characteristics of their parent class but will do so with inheritance.
+
+In rust, classes are split between data and traits. Therefore, you cannot have inheritance of classes but of traits (implementation inheritance vs interface inheritance, see [here](https://stevedonovan.github.io/rust-gentle-intro/object-orientation.html#animals)), the data will not be inherited. To have a concept similar to classes you need to have a collection (such as an Enum or Struct) and some traits, see [here](https://stevedonovan.github.io/rust-gentle-intro/object-orientation.html#animals). Remember that traits are used to share common behaviors among different types.
+
+You can have dynamic dispatch allowing polymorphism on traits only, the virtual methods (trait objects) will be resolved at runtime, causing a little runtime overhead. As in C++, you need both a pointer (`Box`) and a virtual method redifned in another structure or enum (trait): `Box<dyn Draw>`.
+
+# Macros
+
+Remember to export macros with `#[macro_export]`. There are 4 types of macros:
+
+1. declarative: allow you to write something similar to a Rust match expression
+2. procedural custom derive
+3. procedural attribute-like 
+4. procedural function-like
+
+Procedural macros accept some code as an input, operate on that code, and produce some code as an output.
+
+Differences with functions:
+
+- you must define macros or bring them into scope before you call them in a file `#[macro_export]`
+- can take a variable number of parameters
+- macros are expanded before the compiler interprets the meaning of the code
+- more complex than function: more difficult to read, understand, and maintain
+
+# Project organization
+See [here](https://www.reddit.com/r/rust/comments/lvtzri/confused_about_package_vs_crate_terminology/gpdti5j?utm_source=share&utm_medium=web2x&context=3) and [here](https://www.reddit.com/r/rust/comments/lvtzri/confused_about_package_vs_crate_terminology/gpel5rg?utm_source=share&utm_medium=web2x&context=3). 
+
 # Modern language
 The compiler knowns about:
 
@@ -185,6 +237,10 @@ But, no pre-built libraries: need to build everything from source. This is mainl
 
 - automatic referencing and dereferencing: when you have pointers such as `Vec` or `String`, calling `method` on the pointer, `my_vec.method`, will automatically dereference the pointer `my_vec` and call `method` on the pointed object (not like C++ where you have to derefence explicitly doing `(&p1).distance(&p2);`, see [here](https://doc.rust-lang.org/book/ch05-03-method-syntax.html?highlight=impl#wheres-the---operator).
 
+- **clippy!!**
+
+- **rustfmt**
+
 # No hidden states
 
 No null pointer, you need to check the `Option` and the `Result` enums (the latter checked with `?` the try operator: `"42".parse()?` returns error or unwrap). The data type `Option` tells you whether the object could be `None`.
@@ -194,10 +250,10 @@ No null pointer, you need to check the `Option` and the `Result` enums (the latt
 - *primitive obsession:* when a complex pattern would suite better the problem compared to primitive types, e.g. when two pieces of data are related to each other and instead of being grouped into a Struct, they are stored as tuple or array, see [here](https://doc.rust-lang.org/book/ch12-03-improving-error-handling-and-modularity.html#grouping-configuration-values).
 - if you need to create an object that can be shared by either two different kind of resources (such as shared with one or more recipients **or** received from a source), see [here](https://www.reddit.com/r/rust/comments/l594zl/everywhere_i_go_i_miss_rusts_enums/gkteafc?utm_source=share&utm_medium=web2x&context=3)
 
-# Reading the doc with an example
+# Reading the doc 
 The `std::iter::Iterator` trait:
 
-1. is associated to the type `Item`
+1. is associated to the type `Item`, associated types are just placeholders used by the method signature implemented by the trait, see [here](https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#specifying-placeholder-types-in-trait-definitions-with-associated-types)
 2. `next` is the only required method to use this trait
 3. provides other methods
 4. has several functions
@@ -205,6 +261,8 @@ The `std::iter::Iterator` trait:
 The function `chain` for instance, takes as input an iterator `self` and generic type that implements the trait `IntoIterator`, and all the types implementing that trait can be found clicking on the trait, linked to the [doc of the trait](https://doc.rust-lang.org/std/iter/trait.IntoIterator.html#implementors). It returns a new `Iterator`, a struct `Chain`. Note that it takes the ownership of `self` meaning that it create a new iterator and invalidate the previous one (by consuming it?), that is why in many examples you see `myarray.iter().sum()`, that is they do not create a variable `let myiter = myarray.iter()`, since `myiter` will not be available after the `sum()` call.
 
 `pub fn sum<S>(self) -> S where  S: Sum<Self::Item>,` means that the method returns an object of generic type `S` that implements the trait `Sum`, it does not mean that the method returns the `Sum` trait.
+
+**The `Vec` entry:** `Methods from Deref<Target = [T]>` tells you that some methods that are valid on array slices, are valid on `Vec` too. So, `Deref` means that we are talking about references, `Target = ` defines the associated trait and `[T]` means array: these methods come from the type implementing the [`Deref` trait](https://doc.rust-lang.org/std/ops/trait.Deref.html#more-on-deref-coercion) on arrays `[T]`, that is reference on arrays [which are slices!](https://doc.rust-lang.org/std/primitive.slice.html)
 
 # Key points to remember
 
@@ -220,8 +278,10 @@ The function `chain` for instance, takes as input an iterator `self` and generic
 - `if let Err(e) = erronous_function { eprintln!("ERR"); process:exit(1) }` when you want only to print and exit
 - `let A = if mybool { 1 } else { 2 };` is cool, remember the `;` to complete the `let` statement
 - shadowing, borrowing, heap and mutability
-- smart pointers vs struct, indirection
+- smart pointers (`Box` is `unique_ptr` in C++, see [here](https://stevedonovan.github.io/rust-gentle-intro/pain-points.html#shared-references)) vs struct, indirection
 - interior mutability
 - rust has **not** inheritance: use traits and generics (bounded parametric polymorphism)
 - to implement Object-Oriented Design Pattern in rust you transformation of types [see here](https://doc.rust-lang.org/book/ch17-03-oo-design-patterns.html#implementing-transitions-as-transformations-into-different-types)
-- `collect` with iterators is powerful because you can create several different data objects with the same code, just changing the type of the expected result (see rustlings ex `iterators3.rs`)
+- blanket implementation
+- `collect` with iterators is powerful because you can create several different data objects with the same code, just changing the type of the expected result (see rustlings ex `iterators3.rs`).
+- RAII

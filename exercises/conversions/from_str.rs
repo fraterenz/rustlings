@@ -1,3 +1,4 @@
+// Create something from a string slice
 // This does practically the same thing that TryFrom<&str> does.
 // Additionally, upon implementing FromStr, you can use the `parse` method
 // on strings to generate an object of the implementor type.
@@ -9,8 +10,6 @@ struct Person {
     name: String,
     age: usize,
 }
-
-// I AM NOT DONE
 
 // Steps:
 // 1. If the length of the provided string is 0, an error should be returned
@@ -25,6 +24,22 @@ struct Person {
 impl FromStr for Person {
     type Err = String;
     fn from_str(s: &str) -> Result<Person, Self::Err> {
+        if s.len() == 0 {
+            return Err("Error!".to_string());
+        }
+        let spl: Vec<&str> = s.split(",").collect();
+        if spl.len() != 2 {
+            return Err("Error: missing comma?".to_string());
+        }
+        if let Ok(age) = spl[1].parse::<usize>() {
+            if !spl[0].is_empty() {
+                return Ok(Person { name: spl[0].to_owned(), age: age } );
+            } else {
+                return Err("Error while parsing the name".to_string());
+            }
+        } else {
+            return Err("Error while parsing the age".to_string());
+        }
     }
 }
 

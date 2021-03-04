@@ -379,7 +379,6 @@ Tests fail when they panic. When using macros such as `assert_eq` or `assert_neq
 # Chap13: Closures
 Unlike functions, closures can capture values from the scope in which they’re defined. Closures are usually short and relevant only within a narrow context rather than in any arbitrary scenario.
 
-
 Interesting example of closures + `struct` + `HashMap` in [chap13.1, the `Cacher`](https://doc.rust-lang.org/book/ch13-01-closures.html#limitations-of-the-cacher-implementation).
 
 Closures can capture values from their environment in three ways, which directly map to the three ways a function can take a parameter: taking ownership, borrowing mutably, and borrowing immutably. When a closure captures a value from its environment, it uses memory to store the values for use in the closure body. 
@@ -439,9 +438,8 @@ To enable multiple ownerships for reading data only, `Rc<T>` keeps track of the 
 
 ## Summary
 
-
 - `Rc<T>` enables multiple owners of the same data; `Box<T>` and `RefCell<T>` have single owners.
-- `Box<T>` allows immutable or mutable borrows checked at compile time; `Rc<T>` allows only immutable borrows checked at compile time; `RefCell<T>` allows immutable or mutable borrows checked at **runtime**.
+- `Box<T>` allows immutable or mutable borrows checked at compile time (`Box` is equivalent to `unique_ptr` [in C++](https://stevedonovan.github.io/rust-gentle-intro/pain-points.html#shared-references)); `Rc<T>` allows only immutable borrows checked at compile time; `RefCell<T>` allows immutable or mutable borrows checked at **runtime**.
  - Because `RefCell<T>` allows mutable borrows checked at runtime, you can mutate the value inside the `RefCell<T>` even when the `RefCell<T>` is immutable, but the rules of borrowing still apply at runtime (meaning for instance that you cannot have [2 mutable references](https://doc.rust-lang.org/book/ch15-05-interior-mutability.html#keeping-track-of-borrows-at-runtime-with-refcellt)), **interior mutability**
 
 # Chap16: Concurrency
@@ -453,12 +451,12 @@ Rust can’t tell how long the spawned thread will run, so it doesn’t know if 
 To avoid moving a value from main thread to spawned thread, you can create a `Arc` which allows multiple owners that can read only. Similar to `Rc`, you can have multiple ownership in different threads by cloning the shared value. However, since `Rc` is not thread safe, because X, you need to use `Arc` which is safe. To allow multiple ownerships clone the value `Arc::clone(&a)`. To get several mutable ownerships use `Mutex` that provides interior mutability in spawned threads using `Arc`.
 
 # OOP in rust
-No polymorphism in rust, but you can achieve dynamic dispatching (resolution dynamique des liens) using heterogenous collections like in C++, which are defined by `Box<dyn Draw>` where `Draw` is a trait. In C++ dynamic dispatch is obtained using two ingredients: pointers + virtual methods. I think the mechanism used by rust is the same as in C++, because virtual methods looks like traits, and `Box` is a pointer! The difference maybe is that not all traits can be used to create trait objects, they must obey to the following rules:
+No polymorphism in rust, but you can achieve dynamic dispatching (resolution dynamique des liens) using heterogenous collections like in C++, which are defined by `Box<dyn Draw>` where `Draw` is a trait, in general `Box<Fn(f64)->f64>`. In C++ dynamic dispatch is obtained using two ingredients: pointers + virtual methods. I think the mechanism used by rust is the same as in C++, because virtual methods looks like traits, and `Box` is a pointer, and more specifically a `unique_ptr`! The difference maybe is that not all traits can be used to create trait objects, they must obey to the following rules:
 
 1. the return type is **not** `Self`
-2. no generic type paramter
+2. no generic type parameter
 
-To achive static dispatch, you only need generics at trait bounds (`<T: Summary>`, trait bounds used to specify that a generic can be any type that has certain behavior): at compile time, the definitions will be [monomorphized](https://doc.rust-lang.org/book/ch10-01-syntax.html#performance-of-code-using-generics) at compile time to use the concrete types, which means that rust is fast when dealing with generics while using static dispatch. **There is a runtime cost for dynamic dispatch**. Static dispatch is used in C++ by default (like in rust) by looking at the concrete type of the variable.
+To achieve static dispatch, you only need generics at trait bounds (`<T: Summary>`, trait bounds used to specify that a generic can be any type that has certain behavior): at compile time, the definitions will be [monomorphized](https://doc.rust-lang.org/book/ch10-01-syntax.html#performance-of-code-using-generics) at compile time to use the concrete types, which means that rust is fast when dealing with generics while using static dispatch. **There is a runtime cost for dynamic dispatch**. Static dispatch is used in C++ by default (like in rust) by looking at the concrete type of the variable.
 
 Example of a program implementing a heterogeneous collection:
 
@@ -505,6 +503,17 @@ fn main() {
     my_screen.run();
 }
 ```
+# Chap 19.5 Macros
+Fundamentally, macros are a way of writing code that writes other code, which is known as metaprogramming. Different from normal functions for several reasons:
+
+- reduce the amount of code to write and maintain
+- take a variable number of parameters
+- macro definitions are generally more difficult to read, understand, and maintain than function definitions
+- define macros or bring them into scope before you call them in a file
+
+**declarative macros:** similar to match because they take a pattern that is compared against an expression, and based on the result of this comparison, some rust code found in the arm of the macro will be executed and will replace the code in the macro. Better matching against patterns and replacing the code with other code as declarative macros do.
+
+**procedural macros:** accept some code as an input, operate on that code, and produce some code as an output. 
 
 # Why rust? book
 
