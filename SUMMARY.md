@@ -50,6 +50,15 @@ let s = "hello".to_owned();  // ToOwned
 ```
 The slice data structure `&str` stores the starting position and the length of the slice.
 
+## The different types of string in rust
+They could roughly represented [as follows](https://youtu.be/rAl-9HwD858?t=4012): 
+
+- `str -> [char]`: but not quite the same as, no size, a sequence of char
+- `&str -> &[char]`: pointer that stores the start of the string/slice and the length of the slice
+- `String -> Vec<char>`: 1. heap allocated 2. dynamically expandable
+
+From a `String` to `&str` is cheap and easy, performed with `AsRef` in `String`. It's easy because `String` knows where it starts and the length. The opposite is not cheap, because you need to copy all the chars into heap and uses `memcpy` (deep copy). Note that you can have a `&` to a `&str` as in `crust/strsplit/src/lib.rs`.
+
 # Functions and Methods
 
 There are [3 possible ways to create bindings](https://www.possiblerust.com/guide/how-to-read-rust-functions-part-1) between function parameters and arguments:
@@ -285,3 +294,4 @@ The function `chain` for instance, takes as input an iterator `self` and generic
 - blanket implementation
 - `collect` with iterators is powerful because you can create several different data objects with the same code, just changing the type of the expected result (see rustlings ex `iterators3.rs`).
 - RAII
+- Compiler Driven Development with `cargo check`
