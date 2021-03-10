@@ -17,7 +17,6 @@ Read the book and at the same time do rustlings, have a look at [half-hour to ru
 - [Niko Matsakis](https://www.youtube.com/watch?v=jQOZX0xkrWA)
 
 # Algebraic types and pattern matching
-
 In a `struct` or `enum`, the data in the `struct` fields and the behavior in `impl` blocks are separated, which is different from other programming languages.
 
 Remember that `Option` is a `enum` (similar to a type) and `Some` and `None` are the values that a variable `Option` can take, so the data is `Some` or `None` but the type is `Option`.
@@ -39,7 +38,6 @@ if let Number { odd: true, value } = n {
 In a match block, the compiler ensures that you have exhausted and thought about all the possibilities that could match. Else, error (you can use `_` to match all the things you haven't listed).
 
 # Strings
-
 When you declare a binding `let a = "Yo";` you are creating a binding to a string slice which is not stored on the heap, which is not owned type. So use `String` only when you need to modify the string. Some methods to convert string slices (or in general any variable whose type implements the `Display` trait):
 
 ```
@@ -60,7 +58,6 @@ They could roughly represented [as follows](https://youtu.be/rAl-9HwD858?t=4012)
 From a `String` to `&str` is cheap and easy, performed with `AsRef` in `String`. It's easy because `String` knows where it starts and the length. The opposite is not cheap, because you need to copy all the chars into heap and uses `memcpy` (deep copy). Note that you can have a `&` to a `&str` as in `crust/strsplit/src/lib.rs`.
 
 # Functions and Methods
-
 There are [3 possible ways to create bindings](https://www.possiblerust.com/guide/how-to-read-rust-functions-part-1) between function parameters and arguments:
 
 1. by-value (meaning in Rust that it either takes ownership of the bound value, or makes a copy of it, depending on whether the type of that value implements the `Copy` trait), consumes the original variable (invalidate the original binding) if the data is on the heap (because it is a shallow copy of smart unique pointers, allowing one owner at the tine)
@@ -170,7 +167,6 @@ val.push(12);
 4. Immutable references and immutable variables: fine.
 
 # Modules
-
 Great flexibility in rust module system since rust's module paths are not tied directly to the filesystem: hierarchically split code in logical units (modules), and manage visibility (public/private) between them.
 
 # Bring paths into scope with `use`
@@ -199,23 +195,22 @@ To not panic you can:
 2. `match` with `Err(e) => println!("Warning")`
 
 # Lifetimes and references
-
 Lifetimes are there to avoid dangling references, only used when references! There are 3 rules that the borrow checker applies in order to assign a lifetime to each reference:
 
 1. Each reference has one lifetime
 2. If a function has only one input reference, then the output reference will have the same lifetime of the input reference
 3. if there are multiple input lifetime parameters, but one of them is `&self` or `&mut self` because this is a method, the lifetime of self is assigned to all output lifetime parameters
 
-# OOP
+See also the [crust of rust folder](https://github.com/fraterenz/crust/tree/master/strsplit).
 
-There is no concept of `class` in rust, because the idea of grouping data as well as methods is somewhat controversial, see [here](https://stevedonovan.github.io/rust-gentle-intro/object-orientation.html#animals) and [here](https://www.infoworld.com/article/2073649/why-extends-is-evil.html). According to [rust book](https://doc.rust-lang.org/book/ch17-01-what-is-oo.html#inheritance-as-a-type-system-and-as-code-sharing), inheritance has recently fallen out of favor as a programming design solution in many programming languages because it’s often at risk of sharing more code than necessary. Subclasses shouldn’t always share all characteristics of their parent class but will do so with inheritance.
+# OOP
+There is no concept of `class` in rust, because the idea of grouping data as well as methods is somewhat controversial, see [here](https://stevedonovan.github.io/rust-gentle-intro/object-orientation.html#animals) and [here](https://www.infoworld.com/article/2073649/why-extends-is-evil.html). According to [rust book](https://doc.rust-lang.org/book/ch17-01-what-is-oo.html#inheritance-as-a-type-system-and-as-code-sharing), inheritance has recently fallen out of favor as a programming design solution in many programming languages because it’s often at risk of sharing more code than necessary. Subclasses shouldn’t always share all characteristics of their parent class but will do so with inheritance.In this way the code is more flexible and less prone to errors. **Rust instead uses generics to abstract over different possible types and trait bounds to impose constraints on what those types must provide. This is sometimes called bounded parametric polymorphism.**
 
 In rust, classes are split between data and traits. Therefore, you cannot have inheritance of classes but of traits (implementation inheritance vs interface inheritance, see [here](https://stevedonovan.github.io/rust-gentle-intro/object-orientation.html#animals)), the data will not be inherited. To have a concept similar to classes you need to have a collection (such as an Enum or Struct) and some traits, see [here](https://stevedonovan.github.io/rust-gentle-intro/object-orientation.html#animals). Remember that traits are used to share common behaviors among different types.
 
-You can have dynamic dispatch allowing polymorphism on traits only, the virtual methods (trait objects) will be resolved at runtime, causing a little runtime overhead. As in C++, you need both a pointer (`Box`) and a virtual method redifned in another structure or enum (trait): `Box<dyn Draw>`.
+You can have dynamic dispatch allowing polymorphism on traits only, the virtual methods (trait objects) will be resolved at runtime, causing a little runtime overhead. As in C++, you need both a pointer (`Box`) and a virtual method redefined in another structure or enum (trait): `Box<dyn Draw>`.
 
 # Macros
-
 Remember to export macros with `#[macro_export]`. There are 4 types of macros:
 
 1. declarative: allow you to write something similar to a Rust match expression
@@ -283,8 +278,7 @@ The function `chain` for instance, takes as input an iterator `self` and generic
 - stack vs heap
 - to panic or not
 - integration vs unittest
-- redirect error to stderr `cargo run > output.txt` should not contain any errors
-- `if let Err(e) = erronous_function { eprintln!("ERR"); process:exit(1) }` when you want only to print and exit
+- redirect error to stderr `cargo run > output.txt` should not contain any errors: `if let Err(e) = erronous_function { eprintln!("ERR"); process:exit(1) }` when you want only to print and exit
 - `let A = if mybool { 1 } else { 2 };` is cool, remember the `;` to complete the `let` statement
 - shadowing, borrowing, heap and mutability
 - smart pointers (`Box` is `unique_ptr` in C++, see [here](https://stevedonovan.github.io/rust-gentle-intro/pain-points.html#shared-references)) vs struct, indirection
