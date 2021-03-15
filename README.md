@@ -1,5 +1,5 @@
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-77-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-81-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 # rustlings 🦀❤️
@@ -261,6 +261,12 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/tal-zvon"><img src="https://avatars.githubusercontent.com/u/3195851?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tal</b></sub></a><br /><a href="#content-tal-zvon" title="Content">🖋</a></td>
     <td align="center"><a href="https://github.com/apogeeoak"><img src="https://avatars.githubusercontent.com/u/59737221?v=4?s=100" width="100px;" alt=""/><br /><sub><b>apogeeoak</b></sub></a><br /><a href="#content-apogeeoak" title="Content">🖋</a> <a href="https://github.com/rust-lang/rustlings/commits?author=apogeeoak" title="Code">💻</a></td>
     <td align="center"><a href="http://www.garfieldtech.com/"><img src="https://avatars.githubusercontent.com/u/254863?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Larry Garfield</b></sub></a><br /><a href="#content-Crell" title="Content">🖋</a></td>
+    <td align="center"><a href="https://github.com/circumspect"><img src="https://avatars.githubusercontent.com/u/40770208?v=4?s=100" width="100px;" alt=""/><br /><sub><b>circumspect</b></sub></a><br /><a href="#content-circumspect" title="Content">🖋</a></td>
+    <td align="center"><a href="https://github.com/cjwyett"><img src="https://avatars.githubusercontent.com/u/34195737?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Cyrus Wyett</b></sub></a><br /><a href="#content-cjwyett" title="Content">🖋</a></td>
+    <td align="center"><a href="https://github.com/cadolphs"><img src="https://avatars.githubusercontent.com/u/13894820?v=4?s=100" width="100px;" alt=""/><br /><sub><b>cadolphs</b></sub></a><br /><a href="https://github.com/rust-lang/rustlings/commits?author=cadolphs" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://www.haveneer.com"><img src="https://avatars.githubusercontent.com/u/26146722?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Pascal H.</b></sub></a><br /><a href="#content-hpwxf" title="Content">🖋</a></td>
   </tr>
 </table>
 

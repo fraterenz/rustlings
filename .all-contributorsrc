@@ -720,6 +720,42 @@
       "contributions": [
         "content"
       ]
+    },
+    {
+      "login": "circumspect",
+      "name": "circumspect",
+      "avatar_url": "https://avatars.githubusercontent.com/u/40770208?v=4",
+      "profile": "https://github.com/circumspect",
+      "contributions": [
+        "content"
+      ]
+    },
+    {
+      "login": "cjwyett",
+      "name": "Cyrus Wyett",
+      "avatar_url": "https://avatars.githubusercontent.com/u/34195737?v=4",
+      "profile": "https://github.com/cjwyett",
+      "contributions": [
+        "content"
+      ]
+    },
+    {
+      "login": "cadolphs",
+      "name": "cadolphs",
+      "avatar_url": "https://avatars.githubusercontent.com/u/13894820?v=4",
+      "profile": "https://github.com/cadolphs",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "hpwxf",
+      "name": "Pascal H.",
+      "avatar_url": "https://avatars.githubusercontent.com/u/26146722?v=4",
+      "profile": "https://www.haveneer.com",
+      "contributions": [
+        "content"
+      ]
     }
   ],
   "contributorsPerLine": 8,
