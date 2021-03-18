@@ -37,6 +37,51 @@ if let Number { odd: true, value } = n {
 
 In a match block, the compiler ensures that you have exhausted and thought about all the possibilities that could match. Else, error (you can use `_` to match all the things you haven't listed).
 
+# Pointer types
+There are mainly three pointer types in rust:
+
+1. (im)mutable reference `&` and `&mut`
+2. (im)mutable raw pointers `*cont T` and `*mut T`
+3. Smart pointers (like in C++)
+
+So when you create a variable `let a = &mut b` you are creating a mutable reference on `b`, that is `a` can modify `b`. On the other hand, if you write `let mut a = &b` means that `a` cannot modify `b`, but `a` can be modified later in the program (of course without affecting `b`):
+
+```
+fn main() {
+    let mut a: u32 = 3;
+    let mut b = &a;
+    println!("Hello, world! {}", b);
+    println!("Hello, world! {}", a);
+    b=&2;
+    println!("Hello, world! {}", a);
+    println!("Hello, world! {}", b);
+}
+```
+this will print `3 3 3 2`.
+
+# Vec, array and slices
+Each of these are different types:
+- **vec:** a `struct` with a pointer (pointing to the data), capacity (amount of space allocated for any future elements that will be added onto the vector) and length (the number of actual elements in the vector), see [here for more](https://doc.rust-lang.org/std/vec/struct.Vec.html#capacity-and-reallocation)
+- **array:** fixed size array, size known at compile time
+- **mutable slices:** its size is known only at run-time (dynamically sized type), view into block of memory, `&[T]`
+- **immutable slices:** its size is known only at run-time (dynamically sized type), view into block of memory, `&mut [T]`
+
+## To move or to borrow
+- **vec:** with mutable or immutable indexing both with `v[2]` but depends on `v` [whether it is mutable or not](https://doc.rust-lang.org/std/ops/trait.IndexMut.html), move with several methods such as `pop`, `take` ??
+- **array:** borrow by coercing into slice with `&` and `&mut`, move with [`slice patterns`](https://doc.rust-lang.org/reference/patterns.html#slice-patterns)
+- **slices (both immutable and mutable):** you can borrow ?, but you cannot move since slice does not own its data
+
+## Copying
+Shallow copy for all except arrays which means move for `vec` and `Copy` for slices. To avoid moving `vec`, use `clone` to perform a deep copy. For array, deep copy since arrays are on the stack and not on the heap.
+
+## From one type to the other
+- **T2slice:** for both `vec` and array you can transform it into a slice with `&`, you can also use `leak` for `vec` when you want to consume it
+- **T2vec:** for both slice and array you can transform it into a `vec` with `to_vec`, for slice you also have `extend_from_slice`
+- **slice2array:** `copy_from_slice` or `try_into` from Trait `TryInto` see [here](https://stackoverflow.com/questions/25428920/how-to-get-a-slice-as-an-array-in-rust)
+- **vec2array:** I think you cannot do that, since ??
+TODO: have a look at [this](https://doc.rust-lang.org/stable/rust-by-example/conversion/try_from_try_into.html) and rustlings from into.
+
+
 # Strings
 When you declare a binding `let a = "Yo";` you are creating a binding to a string slice which is not stored on the heap, which is not owned type. So use `String` only when you need to modify the string. Some methods to convert string slices (or in general any variable whose type implements the `Display` trait):
 
@@ -71,7 +116,6 @@ Methods are different from functions, since method are defined on an object (an 
 Methods used the keyword `self` as argument since Rust knows the type of `self` is the same of the object due to this method being inside the `impl` context. See also the [automatic dereferencing process](#modern-language).
 
 ## Closures
-
 Closures have zero cost overhead and are used when a function requires access to the context. Functions that require no context have the `fn` type, which is called a function pointer and implements all the traits used to define a closure `Fn`, `FnMut` and `FnOnce`.
 
 `let k = my_vec.iter().filter(|&&n| **n > 0).count();` since `iter` returns a reference over an item, that is `&T`(let's say `i32`, see [here](https://doc.rust-lang.org/std/iter/index.html#the-three-forms-of-iteration)) and `filter` takes a closure that in turn takes a mutable reference on the `Item` that is on `Self`, as explained by the trait bound in the doc `where, P: FnMut(&Self::Item) -> bool`, see [here](https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.filter). The trait `Fn` is used by closures to capture the values from their environment, see [here](https://stevedonovan.github.io/rustifications/2018/08/18/rust-closures-are-hard.html).
@@ -81,6 +125,7 @@ Closures have zero cost overhead and are used when a function requires access to
 **Storing closures** even if two closures implement `Fn` traits, since they are structures, they need to be stored in a heterogeneous collection `Box<Fn(x: f64)->f64 + 'a>`, see [here](https://stevedonovan.github.io/rust-gentle-intro/pain-points.html#references-and-lifetimes) and also [here](#OOP).
 
 # Memory management
+By default, variable bindings have 'move semantics', however, if a type implements `Copy`, it instead has ['copy semantics'](https://doc.rust-lang.org/std/marker/trait.Copy.html).
 Managing memory at compile time (pointers checks) is the key point of rust. When that is not possible (e.g. user input non defined at compile time but at runtime), rust stored data on the heap (e.g. `Vec`, `Box` or `String`). I think that most of the things that are stored on the heap binds to the variable using smart pointers, more specifically `unique_ptr` in C++, see [here](https://youtu.be/CaZP-1ETL-o?t=377). 
 
 The rules are there to [avoid the following errors](https://youtu.be/DnT-LUQgc7s?t=1211):
@@ -118,7 +163,6 @@ When data is on the heap, the value `s1` bound to the data is only a pointer! Ru
 
 ## Examples
 ### Messing with ownership (moves)
-
 Immutable variable moved to `mut` variable: this particular example is not allowed because `val` has been moved to `var` and the data associated to it has been dropped?:
 
 ```
@@ -227,6 +271,11 @@ Differences with functions:
 - macros are expanded before the compiler interprets the meaning of the code
 - more complex than function: more difficult to read, understand, and maintain
 
+## More on declarative macros: crust
+The macro call gets completely replaced with the rust code found in the `{ }` based on the match arm of the macro.
+
+Macros input must be parsable rust code (syntactically correct, but not valid rust) but the output must be [valid rust](https://youtu.be/q6paRBbLgNw?t=587). Note that identifiers in macro world are completely distinct from variables [outside the macro world](https://youtu.be/q6paRBbLgNw?t=873), but if you use the syntax `$x:ident` in the macro world, and you call it using `avec!(x)`, then the two identifiers match: your are creating the link between the two `x`, see [hygiene](https://danielkeep.github.io/tlborm/book/mbe-min-hygiene.html).
+
 # Project organization
 See [here](https://www.reddit.com/r/rust/comments/lvtzri/confused_about_package_vs_crate_terminology/gpdti5j?utm_source=share&utm_medium=web2x&context=3) and [here](https://www.reddit.com/r/rust/comments/lvtzri/confused_about_package_vs_crate_terminology/gpel5rg?utm_source=share&utm_medium=web2x&context=3). 
 
@@ -241,9 +290,9 @@ But, no pre-built libraries: need to build everything from source. This is mainl
 
 - automatic referencing and dereferencing: when you have pointers such as `Vec` or `String`, calling `method` on the pointer, `my_vec.method`, will automatically dereference the pointer `my_vec` and call `method` on the pointed object (not like C++ where you have to derefence explicitly doing `(&p1).distance(&p2);`, see [here](https://doc.rust-lang.org/book/ch05-03-method-syntax.html?highlight=impl#wheres-the---operator).
 
-- **clippy!!**
+- **clippy:** `cargo clippy` or in CLI
 
-- **rustfmt**
+- **rustfmt:** `cargo fmt`
 
 # No hidden states
 
@@ -266,7 +315,7 @@ The function `chain` for instance, takes as input an iterator `self` and generic
 
 `pub fn sum<S>(self) -> S where  S: Sum<Self::Item>,` means that the method returns an object of generic type `S` that implements the trait `Sum`, it does not mean that the method returns the `Sum` trait.
 
-**The `Vec` entry:** `Methods from Deref<Target = [T]>` tells you that some methods that are valid on array slices, are valid on `Vec` too. So, `Deref` means that we are talking about references, `Target = ` defines the associated trait and `[T]` means array: these methods come from the type implementing the [`Deref` trait](https://doc.rust-lang.org/std/ops/trait.Deref.html#more-on-deref-coercion) on arrays `[T]`, that is reference on arrays [which are slices!](https://doc.rust-lang.org/std/primitive.slice.html)
+**The `Vec` entry:** `Methods from Deref<Target = [T]>` tells you that some methods come from array slices, since `Vec` can be `Deref` into slice arrays, see the documentation at `trait.Deref` and look for `Vec`, [src code](https://doc.rust-lang.org/src/alloc/vec.rs.html#2096-2102). So, `Deref` means that we are talking about references, since they implement this trait with an [associated array type](https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#specifying-placeholder-types-in-trait-definitions-with-associated-types) `Target = [T]`: this works because when we call `sort` on `Vec`, rust performs the [`deref` coercion](https://doc.rust-lang.org/book/ch15-02-deref.html#implicit-deref-coercions-with-functions-and-methods) that is it automatically convert a reference of a type into a reference of another type.
 
 # Key points to remember
 
