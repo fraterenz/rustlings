@@ -216,6 +216,9 @@ Great flexibility in rust module system since rust's module paths are not tied d
 # Bring paths into scope with `use`
 The convention is to always bring to scope the parent module to avoid confusion (`use std::env` and then `env::args` instead of directly `std::env::args`) except for structs, enums, and other items where you should use the second convention, that is `std::collections::HashMap`. 
 
+# Traits
+Are used to capture common behaviors among different types.
+
 # To panic! or not to panic!
 To panic! is more appropriate for a programming problem than a usage problem. For the latter is better to return a `Result` from the function, and in the caller block (like the `main` for instance), you can `unwrap_or_else` the `Result`. Doing so, the value will be `unwrap`ped if the function returned an instance of an `Ok`, else it will print an string that you want, and then you can exit the program from [here](https://doc.rust-lang.org/book/ch13-03-improving-error-handling-and-modularity.html#calling-confignew-and-handling-errors):
 
@@ -248,9 +251,13 @@ Lifetimes are there to avoid dangling references, only used when references! The
 See also the [crust of rust folder](https://github.com/fraterenz/crust/tree/master/strsplit).
 
 # OOP
+State pattern OOP encapsulates both the state (attributes of the class) and the behavior (with methods of that class). This is achieved using classes.
+
 There is no concept of `class` in rust, because the idea of grouping data as well as methods is somewhat controversial, see [here](https://stevedonovan.github.io/rust-gentle-intro/object-orientation.html#animals) and [here](https://www.infoworld.com/article/2073649/why-extends-is-evil.html). According to [rust book](https://doc.rust-lang.org/book/ch17-01-what-is-oo.html#inheritance-as-a-type-system-and-as-code-sharing), inheritance has recently fallen out of favor as a programming design solution in many programming languages because it’s often at risk of sharing more code than necessary. Subclasses shouldn’t always share all characteristics of their parent class but will do so with inheritance.In this way the code is more flexible and less prone to errors. **Rust instead uses generics to abstract over different possible types and trait bounds to impose constraints on what those types must provide. This is sometimes called bounded parametric polymorphism.**
 
 In rust, classes are split between data and traits. Therefore, you cannot have inheritance of classes but of traits (implementation inheritance vs interface inheritance, see [here](https://stevedonovan.github.io/rust-gentle-intro/object-orientation.html#animals)), the data will not be inherited. To have a concept similar to classes you need to have a collection (such as an Enum or Struct) and some traits, see [here](https://stevedonovan.github.io/rust-gentle-intro/object-orientation.html#animals). Remember that traits are used to share common behaviors among different types.
+
+The idea in rust is to use the type check system to enforce the state and to encode the behaviors. In the [rust book example](https://doc.rust-lang.org/book/ch17-03-oo-design-patterns.html#encoding-states-and-behavior-as-types) the user works with the `Post` (using `Post::new()`, `post.request_review()` and `post.approve()` but these methods returns different objects that behave differently since they represent different states of the `Post`. **Give the user the parent class, after every method calls, the object returned is specialized (consumes the previous object taking the ownership of `self`) such that it represents both the behavior and the state, but the behavior is in the implemented trait (which are used to capture common behaviors among different types), whereas the state is in the type**.
 
 You can have dynamic dispatch allowing polymorphism on traits only, the virtual methods (trait objects) will be resolved at runtime, causing a little runtime overhead. As in C++, you need both a pointer (`Box`) and a virtual method redefined in another structure or enum (trait): `Box<dyn Draw>`.
 
