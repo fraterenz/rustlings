@@ -1,8 +1,8 @@
 Rust is a strongly-type language: 
-- the language takes advantages of the behaviours embedded into the variables' types: choose the type of your variable based on the tasks these variables need to perform. Similar to [C++ operator overloading](https://youtu.be/DnT-LUQgc7s?t=774). For instance, the null pointer example encapsulated into a `Option` enum, see [here](#no-hidden-states)
+- the language takes advantages of the behaviours embedded into the variables' types: choose the type of your variable based on the tasks these variables need to perform. Similar to [C++ operator overloading](https://youtu.be/DnT-LUQgc7s?t=774). For instance, the null pointer example encapsulated into a `Option` annum, see [here](#no-hidden-states)
 - types must have a fixed sized at compile type, see [recursive types with `Box`](https://doc.rust-lang.org/book/ch15-01-box.html#enabling-recursive-types-with-boxes), all these types implement the `Sized` trait
 
-Rust provides memory safety when resources matter (speed and cpu usage in the system programming field) that is low-level language, memory safe with zero cost abstraction.
+Rust provides memory safety when resources matter (speed and CPU usage in the system programming field) that is low-level language, memory safe with zero cost abstraction.
 
 # Learning rust
 Read the book and at the same time do rustlings, have a look at [half-hour to rust](https://fasterthanli.me/articles/a-half-hour-to-learn-rust), do exercism rust track, the [crust of rust](https://www.youtube.com/playlist?list=PLqbS7AVVErFiWDOAVrPt7aYmnuuOLYvOa) and have a look at the following crates:
@@ -262,9 +262,9 @@ The idea in rust is to use the type check system to enforce the state and to enc
 You can have dynamic dispatch allowing polymorphism on traits only, the virtual methods (trait objects) will be resolved at runtime, causing a little runtime overhead. As in C++, you need both a pointer (`Box`) and a virtual method redefined in another structure or enum (trait): `Box<dyn Draw>`.
 
 # Macros
-Remember to export macros with `#[macro_export]`. There are 4 types of macros:
+Remember to export macros with `#[macro_export]`, it is similar to `pub` for functions. There are 4 types of macros:
 
-1. declarative: allow you to write something similar to a Rust match expression
+1. declarative: allow you to write something similar to a Rust match expression, very useful for [repetitions](https://youtu.be/q6paRBbLgNw?t=2799) but also for non-fixed number of parameters in function
 2. procedural custom derive
 3. procedural attribute-like 
 4. procedural function-like
@@ -279,9 +279,44 @@ Differences with functions:
 - more complex than function: more difficult to read, understand, and maintain
 
 ## More on declarative macros: crust
-The macro call gets completely replaced with the rust code found in the `{ }` based on the match arm of the macro.
+The goal is to substitute a grammar-valid rust sentence into a rust valid code.
 
-Macros input must be parsable rust code (syntactically correct, but not valid rust) but the output must be [valid rust](https://youtu.be/q6paRBbLgNw?t=587). Note that identifiers in macro world are completely distinct from variables [outside the macro world](https://youtu.be/q6paRBbLgNw?t=873), but if you use the syntax `$x:ident` in the macro world, and you call it using `avec!(x)`, then the two identifiers match: your are creating the link between the two `x`, see [hygiene](https://danielkeep.github.io/tlborm/book/mbe-min-hygiene.html).
+- macros input: must be syntactically grammar valid
+- macros output: rust valid code, you can think of it such that the return type must be an expression
+- the double curly brackets: `{ { ` the first one is required by the macro syntax and means "this stuff here", whereas the second one is to tell the compiler that we want to expand the macro into a block
+
+**macro input:** macros input must be parsable rust code (syntactically correct, but not valid rust) but the output must be [valid rust](https://youtu.be/q6paRBbLgNw?t=587). More precisely, the input must be [single non-leaf token tree](https://danielkeep.github.io/tlborm/book/mbe-syn-macros-in-the-ast.html), which are parsed during the parser step while constructing the abstract syntax tree (AST). Note that identifiers in macro world are completely distinct from variables [outside the macro world](https://youtu.be/q6paRBbLgNw?t=873), but if you use the syntax `$x:ident` in the macro world, and you call it using `avec!(x)`, then the two identifiers match: your are creating the link between the two `x`, see [hygiene](https://danielkeep.github.io/tlborm/book/mbe-min-hygiene.html).
+
+#### Macro expansion
+The macro call gets completely replaced with the rust code found in the `{ }` based on the match arm of the macro. This steps is done after the construction of the AST, but [before the compiler starts linking and doing statical analysis](https://danielkeep.github.io/tlborm/book/mbe-syn-expansion.html), see also overleaf `CS`. Since the macro expansions happens **after** the construction of the AST, the syntax used to invoke a macro must be a proper part of the language's syntax, there are [four valid syntax expansions](https://danielkeep.github.io/tlborm/book/mbe-syn-macros-in-the-ast.html). This involves traversing the AST, locating macro invocations and replacing them with their expansion. 
+
+To see what your macros expands to, use the [crate](https://github.com/dtolnay/cargo-expand) which takes as input the source of the crate you are currently in, and expands all the macros with their definitions. To use it, you need nightly version of rust that you can set for the current project as indicated [here](https://doc.rust-lang.org/book/appendix-07-nightly-rust.html#rustup-and-the-role-of-rust-nightly).
+
+After the macro expansion, the compiler will parse the result into an AST node that represents an item, based on the position of the macro call. In other words, where you can invoke a macro determines what its result will be interpreted as. 
+
+As a consequence:
+- **limited number of invocation positions:** since macros are parsed by the parser as part of the AST (and expanded immediately after), they can be used only in positions where there are [supported](https://danielkeep.github.io/tlborm/book/mbe-syn-macros-in-the-ast.html): 1. Patterns 2. Statements 3. Expressions 4. Items 5. `impl` Items.
+- **expansion must match the expected AST node:** macros can only expand to the kind of AST node the parser expects at that position.
+- **macros must be complete and syntactically valid constructs**
+- **recursion limit in macro expansion:** until all the macros are recursively expanded, the AST construction is not ended, unless there are more than 32 recursive expansions. This limit can be raised using the `#![recursion_limit="…"]`
+
+#### `macro_rules!`
+It is a syntax extension, meaning it is technically not part of the Rust syntax. Takes this form:
+```
+macro_rules! $name {
+    $rule0 ;
+    $rule1 ;
+    // …
+    $ruleN ;
+}
+```
+and there must be at least one rule and each rule looks like this `($pattern) => {$expansion}`. Interestingly, `macro_rules!` does not expand to anything, instead it manipulates compiler-internal structures to register the macro.
+
+**matching:** if the input matches the pattern, the invocation is replaced by the expansion; otherwise, the next rule is tried. If all rules fail to match, macro expansion fails with an error. Patterns can also contain captures. These allow input to be matched based on some general grammar category, with the result captured to a variable which can then be substituted into the output
+
+**captures:** are written as a dollar followed by an identifier, a colon, and the kind of capture, that must be [one of the following](https://danielkeep.github.io/tlborm/book/mbe-macro-rules.html#captures). It is not very clear what each type really represents, also because there is [hierarchy among types](https://danielkeep.github.io/tlborm/book/mbe-min-captures-and-expansion-redux.html), but `expr` is anything that you can add a `;` afterwards.
+
+**repetitions:** create for loops, see [here](https://danielkeep.github.io/tlborm/book/mbe-macro-rules.html#repetitions).
 
 # Project organization
 See [here](https://www.reddit.com/r/rust/comments/lvtzri/confused_about_package_vs_crate_terminology/gpdti5j?utm_source=share&utm_medium=web2x&context=3) and [here](https://www.reddit.com/r/rust/comments/lvtzri/confused_about_package_vs_crate_terminology/gpel5rg?utm_source=share&utm_medium=web2x&context=3). 
@@ -289,7 +324,7 @@ See [here](https://www.reddit.com/r/rust/comments/lvtzri/confused_about_package_
 # Modern language
 The compiler knowns about:
 
-- tests: `#[test]`, and can automatically access to private fields! The compiler knows also about the doc, also doc tests `///` and `/// assert_eq!(one_more(42), 43)``` and it will compile and run the doc tests too.
+- tests: `#[test]`, and can automatically access to private fields! The compiler knows also about the doc, also doc tests `///` and `/// assert_eq!(one_more(42), 43)``` and it will compile and run the doc tests too. **Very interesting:** `compile_fail` for doc tests that are supposed to fail, see [here](https://youtu.be/q6paRBbLgNw?t=3383).
 
 - buit-in dependencies and dependecy graph: each time you compile your program, the dependencies in the `.toml` file will be fetched with `cargo build`. Up to date version of the dependency without breaking (since if you specify `1.3.2` it will fecth everything greather than that, but smaller than `2.0.0`, since semantically that version should cause breaking changes in the code).
 
@@ -313,35 +348,35 @@ No null pointer, you need to check the `Option` and the `Result` enums (the latt
 # Reading the doc 
 The `std::iter::Iterator` trait:
 
-1. is associated to the type `Item`, associated types are just placeholders used by the method signature implemented by the trait, see [here](https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#specifying-placeholder-types-in-trait-definitions-with-associated-types)
+1. Is associated to the type `Item`, associated types are just placeholders used by the method signature implemented by the trait, see [here](https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#specifying-placeholder-types-in-trait-definitions-with-associated-types)
 2. `next` is the only required method to use this trait
-3. provides other methods
-4. has several functions
+3. Provides other methods
+4. Has several functions
 
-The function `chain` for instance, takes as input an iterator `self` and generic type that implements the trait `IntoIterator`, and all the types implementing that trait can be found clicking on the trait, linked to the [doc of the trait](https://doc.rust-lang.org/std/iter/trait.IntoIterator.html#implementors). It returns a new `Iterator`, a struct `Chain`. Note that it takes the ownership of `self` meaning that it create a new iterator and invalidate the previous one (by consuming it?), that is why in many examples you see `myarray.iter().sum()`, that is they do not create a variable `let myiter = myarray.iter()`, since `myiter` will not be available after the `sum()` call.
+The function `chain` for instance, takes as input an iterator `self` and generic type that implements the trait `IntoIterator`, and all the types implementing that trait can be found clicking on the trait, linked to the [doc of the trait](https://doc.rust-lang.org/std/iter/trait.IntoIterator.html#implementors). It returns a new `Iterator`, a strict `Chain`. Note that it takes the ownership of `self` meaning that it create a new iterator and invalidate the previous one (by consuming it?), that is why in many examples you see `myarray.iter().sum()`, that is they do not create a variable `let myiter = myarray.iter()`, since `myiter` will not be available after the `sum()` call.
 
 `pub fn sum<S>(self) -> S where  S: Sum<Self::Item>,` means that the method returns an object of generic type `S` that implements the trait `Sum`, it does not mean that the method returns the `Sum` trait.
 
-**The `Vec` entry:** `Methods from Deref<Target = [T]>` tells you that some methods come from array slices, since `Vec` can be `Deref` into slice arrays, see the documentation at `trait.Deref` and look for `Vec`, [src code](https://doc.rust-lang.org/src/alloc/vec.rs.html#2096-2102). So, `Deref` means that we are talking about references, since they implement this trait with an [associated array type](https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#specifying-placeholder-types-in-trait-definitions-with-associated-types) `Target = [T]`: this works because when we call `sort` on `Vec`, rust performs the [`deref` coercion](https://doc.rust-lang.org/book/ch15-02-deref.html#implicit-deref-coercions-with-functions-and-methods) that is it automatically convert a reference of a type into a reference of another type.
+**The `Vec` entry:** `Methods from Deref<Target = [T]>` tells you that some methods come from array slices, since `Vec` can be `Deref` into slice arrays, see the documentation at `trait.Deref` and look for `Vec`, [sac code](https://doc.rust-lang.org/src/alloc/vec.rs.html#2096-2102). So, `Deref` means that we are talking about references, since they implement this trait with an [associated array type](https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#specifying-placeholder-types-in-trait-definitions-with-associated-types) `Target = [T]`: this works because when we call `sort` on `Vec`, rust performs the [`deref` coercion](https://doc.rust-lang.org/book/ch15-02-deref.html#implicit-deref-coercions-with-functions-and-methods) that is it automatically convert a reference of a type into a reference of another type.
 
 # Key points to remember
 
 - binary application vs library
 - primitive obsession
 - Test-driven development (TDD) process
-- methods ([traits](https://doc.rust-lang.org/book/ch13-02-iterators.html#the-iterator-trait-and-the-next-method), structs and [enums](https://doc.rust-lang.org/rust-by-example/custom_types/enum/testcase_linked_list.html)) vs functions
+- methods ([traits](https://doc.rust-lang.org/book/ch13-02-iterators.html#the-iterator-trait-and-the-next-method), struts and [enemas](https://doc.rust-lang.org/rust-by-example/custom_types/enum/testcase_linked_list.html)) vs functions
 - automatic dereferencing
 - stack vs heap
 - to panic or not
-- integration vs unittest
-- redirect error to stderr `cargo run > output.txt` should not contain any errors: `if let Err(e) = erronous_function { eprintln!("ERR"); process:exit(1) }` when you want only to print and exit
+- integration vs unites
+- redirect error to std err `cargo run > output.txt` should not contain any errors: `if let Err(e) = erronous_function { eprintln!("ERR"); process:exit(1) }` when you want only to print and exit
 - `let A = if mybool { 1 } else { 2 };` is cool, remember the `;` to complete the `let` statement
 - shadowing, borrowing, heap and mutability
-- smart pointers (`Box` is `unique_ptr` in C++, see [here](https://stevedonovan.github.io/rust-gentle-intro/pain-points.html#shared-references)) vs struct, indirection
+- smart pointers (`Box` is `unique_ptr` in C++, see [here](https://stevedonovan.github.io/rust-gentle-intro/pain-points.html#shared-references)) vs strict, indirection
 - interior mutability
 - rust has **not** inheritance: use traits and generics (bounded parametric polymorphism)
 - to implement Object-Oriented Design Pattern in rust you transformation of types [see here](https://doc.rust-lang.org/book/ch17-03-oo-design-patterns.html#implementing-transitions-as-transformations-into-different-types)
 - blanket implementation
-- `collect` with iterators is powerful because you can create several different data objects with the same code, just changing the type of the expected result (see rustlings ex `iterators3.rs`).
-- RAII
+- `collect` with iterators is powerful because you can create several different data objects with the same code, just changing the type of the expected result (see rustling ex `iterators3.rs`).
+- RABI
 - Compiler Driven Development with `cargo check`
