@@ -60,6 +60,8 @@ fn main() {
 this will print `3 3 3 2`.
 
 # Vec, array and slices
+**remember that reference to vec are different from slices!** that is they are two different types. However, a reference to a vector `&vec` can be easily transformed into a slice thanks to the `Deref` coercion, that is from `&T` to `&U` when `T: Deref<Target=U>` where `T` is `vec` and `U` is an array. The [source code](https://doc.rust-lang.org/src/alloc/vec.rs.html#2096-2102) says that `fn deref(&self) -> &[T]`.
+
 Each of these are different types:
 - **vec:** a `struct` with a pointer (pointing to the data), capacity (amount of space allocated for any future elements that will be added onto the vector) and length (the number of actual elements in the vector), see [here for more](https://doc.rust-lang.org/std/vec/struct.Vec.html#capacity-and-reallocation)
 - **array:** fixed size array, size known at compile time
@@ -67,7 +69,7 @@ Each of these are different types:
 - **immutable slices:** its size is known only at run-time (dynamically sized type), view into block of memory, `&mut [T]`
 
 ## To move or to borrow
-- **vec:** with mutable or immutable indexing both with `v[2]` but depends on `v` [whether it is mutable or not](https://doc.rust-lang.org/std/ops/trait.IndexMut.html), move with several methods such as `pop`, `take` ??
+- **vec:** with mutable or immutable indexing both with `v[2]` but depends on `v` [whether it is mutable or not](https://doc.rust-lang.org/std/ops/trait.IndexMut.html), move with several methods such as `pop`, `take`. It is not allowed to move values out of a structure or a collection, such as a vector. You can either move the ownership of the whole vector over to a new variable (e.g. `let w = v;`) or you can take a reference: the vector retains ownership, but you get access to some of its elements as long as the original owner is in scope
 - **array:** borrow by coercing into slice with `&` and `&mut`, move with [`slice patterns`](https://doc.rust-lang.org/reference/patterns.html#slice-patterns)
 - **slices (both immutable and mutable):** you can borrow ?, but you cannot move since slice does not own its data
 
@@ -116,7 +118,11 @@ Methods are different from functions, since method are defined on an object (an 
 Methods used the keyword `self` as argument since Rust knows the type of `self` is the same of the object due to this method being inside the `impl` context. See also the [automatic dereferencing process](#modern-language).
 
 ## Closures
-Closures have zero cost overhead and are used when a function requires access to the context. Functions that require no context have the `fn` type, which is called a function pointer and implements all the traits used to define a closure `Fn`, `FnMut` and `FnOnce`.
+Closures have zero cost overhead and are used when a function requires access to the context. Functions that require no context have the `fn` type, which is called a function pointer and implements all the traits used to define a closure `Fn`, `FnMut` and `FnOnce`:
+
+- `Fn` is implemented by closures that can be called multiple times without changing the captured variables (they don't consume the captured variables with move semantics and they don't require them to be mutable);
+- `FnMut` is implemented by closures that can be called multiple times with the possibility of mutating the captured variables (they don't consume the captured variables with move semantics but they might require them to be mutable);
+- `FnOnce` is implemented by closures that might take some of their captured variables by value, thus consuming them due to move semantics (that's why it's called FnOnce: it there is a move involved, you can only call them once!).
 
 `let k = my_vec.iter().filter(|&&n| **n > 0).count();` since `iter` returns a reference over an item, that is `&T`(let's say `i32`, see [here](https://doc.rust-lang.org/std/iter/index.html#the-three-forms-of-iteration)) and `filter` takes a closure that in turn takes a mutable reference on the `Item` that is on `Self`, as explained by the trait bound in the doc `where, P: FnMut(&Self::Item) -> bool`, see [here](https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.filter). The trait `Fn` is used by closures to capture the values from their environment, see [here](https://stevedonovan.github.io/rustifications/2018/08/18/rust-closures-are-hard.html).
 
@@ -357,7 +363,7 @@ The function `chain` for instance, takes as input an iterator `self` and generic
 
 `pub fn sum<S>(self) -> S where  S: Sum<Self::Item>,` means that the method returns an object of generic type `S` that implements the trait `Sum`, it does not mean that the method returns the `Sum` trait.
 
-**The `Vec` entry:** `Methods from Deref<Target = [T]>` tells you that some methods come from array slices, since `Vec` can be `Deref` into slice arrays, see the documentation at `trait.Deref` and look for `Vec`, [sac code](https://doc.rust-lang.org/src/alloc/vec.rs.html#2096-2102). So, `Deref` means that we are talking about references, since they implement this trait with an [associated array type](https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#specifying-placeholder-types-in-trait-definitions-with-associated-types) `Target = [T]`: this works because when we call `sort` on `Vec`, rust performs the [`deref` coercion](https://doc.rust-lang.org/book/ch15-02-deref.html#implicit-deref-coercions-with-functions-and-methods) that is it automatically convert a reference of a type into a reference of another type.
+**The `Vec` entry:** `Methods from Deref<Target = [T]>` tells you that some methods come from array slices, since `&Vec` can be `Deref` into slice arrays, see the documentation at `trait.Deref` and look for `Vec`, [sac code](https://doc.rust-lang.org/src/alloc/vec.rs.html#2096-2102). So, `Deref` means that we are talking about references, since they implement this trait with an [associated array type](https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#specifying-placeholder-types-in-trait-definitions-with-associated-types) `Target = [T]`: this works because when we call `sort` on `Vec`, rust performs the [`deref` coercion](https://doc.rust-lang.org/book/ch15-02-deref.html#implicit-deref-coercions-with-functions-and-methods) that is it automatically convert a reference of a type into a reference of another type.
 
 # Key points to remember
 
