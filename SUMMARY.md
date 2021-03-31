@@ -240,7 +240,7 @@ With errors you can either panic or not. In order to panic you can:
 1. `.unwrap()` a `Result`
 2. `.expect("my message")` a `Result` you can add a message
 3. `match` with `Err(e) => panic!(e)`
-4. use the `?` operator after a `Result`
+4. use the `?` operator after a `Result`: the `?` operator calls the `from` function and the error type received is converted into the error type defined in the return type of the current function. So whathever error is raised whithin the function, it will converted into the error returned by the function.
 
 To not panic you can:
 
