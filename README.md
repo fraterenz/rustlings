@@ -1,5 +1,5 @@
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-81-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-83-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 # rustlings 🦀❤️
@@ -29,9 +29,9 @@ You will need to have Rust installed. You can get it by visiting https://rustup.
 Just run:
 
 ```bash
-curl -L https://git.io/rustlings | bash
+curl -L https://git.io/install-rustlings | bash
 # Or if you want it to be installed to a different path:
-curl -L https://git.io/rustlings | bash -s mypath/
+curl -L https://git.io/install-rustlings | bash -s mypath/
 ```
 
 This will install Rustlings and give you access to the `rustlings` command. Run it to get started!
@@ -47,7 +47,7 @@ Set-ExecutionPolicy RemoteSigned
 Then, you can run:
 
 ```ps
-Start-BitsTransfer -Source https://git.io/rustlings-win -Destination $env:TMP/install_rustlings.ps1; Unblock-File $env:TMP/install_rustlings.ps1; Invoke-Expression $env:TMP/install_rustlings.ps1
+Start-BitsTransfer -Source https://git.io/JTL5v -Destination $env:TMP/install_rustlings.ps1; Unblock-File $env:TMP/install_rustlings.ps1; Invoke-Expression $env:TMP/install_rustlings.ps1
 ```
 
 To install Rustlings. Same as on MacOS/Linux, you will have access to the `rustlings` command after it.
@@ -267,6 +267,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tr>
   <tr>
     <td align="center"><a href="https://www.haveneer.com"><img src="https://avatars.githubusercontent.com/u/26146722?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Pascal H.</b></sub></a><br /><a href="#content-hpwxf" title="Content">🖋</a></td>
+    <td align="center"><a href="https://twitter.com/chapeupreto"><img src="https://avatars.githubusercontent.com/u/834048?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Rod Elias</b></sub></a><br /><a href="#content-chapeupreto" title="Content">🖋</a></td>
+    <td align="center"><a href="https://github.com/blerchy"><img src="https://avatars.githubusercontent.com/u/2555355?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Matt Lebl</b></sub></a><br /><a href="https://github.com/rust-lang/rustlings/commits?author=blerchy" title="Code">💻</a></td>
   </tr>
 </table>
 
